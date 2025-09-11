@@ -1,0 +1,60 @@
+{
+  "collections": [
+    {
+      "collectionName": "scenic_spots",
+      "description": "景点数据集合",
+      "indexes": [
+        {
+          "IndexName": "city_index",
+          "MgoKeySchema": {
+            "MgoIndexKeys": [
+              {
+                "Name": "city",
+                "Direction": "1"
+              }
+            ],
+            "MgoIsUnique": false
+          }
+        },
+        {
+          "IndexName": "status_sort_index", 
+          "MgoKeySchema": {
+            "MgoIndexKeys": [
+              {
+                "Name": "status",
+                "Direction": "1"
+              },
+              {
+                "Name": "sort",
+                "Direction": "1"
+              }
+            ],
+            "MgoIsUnique": false
+          }
+        }
+      ]
+    },
+    {
+      "collectionName": "user_feedback",
+      "description": "用户反馈集合",
+      "indexes": [
+        {
+          "IndexName": "status_time_index",
+          "MgoKeySchema": {
+            "MgoIndexKeys": [
+              {
+                "Name": "status",
+                "Direction": "1"
+              },
+              {
+                "Name": "createTime",
+                "Direction": "-1"
+              }
+            ],
+            "MgoIsUnique": false
+          }
+        }
+      ]
+    }
+  ]
+}

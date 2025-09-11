@@ -1,0 +1,7 @@
+{
+  "name": "submitFeedback",
+  "version": "1.0.0",
+  "description": "提交用户反馈",
+  "main": "index.js",
+  "dependencies": {}
+}
