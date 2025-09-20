@@ -1,62 +1,81 @@
 <template>
 	<view class="container">
-		<!-- 头部区域 -->
-		<view class="header">
-			<!-- 导航栏 -->
-			<view class="nav-bar">
-				<view class="nav-left">
-					<text class="app-title">QuickTrip</text>
+
+		
+		<!-- 顶部区域 -->
+		<view class="header-section">
+			<view class="header-bg"></view>
+			<view class="header-content">
+				<view class="location-selector" @tap="goToCitySelect">
+					<view class="location-pill">
+						<text class="location-pin">📍</text>
+						<text class="location-name">{{currentCity.name}}</text>
+						<text class="location-chevron">›</text>
+					</view>
 				</view>
-				<view class="nav-right" @tap="goToCitySelect">
-					<text class="city-name">{{currentCity.name}}</text>
-					<text class="city-arrow">▼</text>
-				</view>
-			</view>
-			
-			<!-- 搜索区域 -->
-			<view class="search-section">
-				<view class="search-box">
-					<text class="search-icon">🔍</text>
-					<input 
-						class="search-input" 
-						v-model="searchKeyword" 
-						placeholder="搜索景点名称"
-						@input="onSearchInput"
-						placeholder-style="color: #ccc"
-					/>
+				<view class="brand-area">
+					<text class="brand-title">快约景</text>
+					<text class="brand-subtitle">一站式约景小助手</text>
 				</view>
 			</view>
 		</view>
 		
-		<!-- 景点列表 -->
-		<view class="content">
-			<view class="scenic-list">
+		<!-- 主内容区域 -->
+		<view class="main-content">
+
+			
+			<!-- 景点卡片列表 -->
+			<view class="spots-grid">
 				<view 
-					class="scenic-item" 
+					class="spot-card" 
 					v-for="(item, index) in filteredScenicSpots" 
 					:key="index"
 					@tap="reserveScenic(item)"
 				>
-					<view class="scenic-logo">
-						<text class="logo-text">{{item.name.charAt(0)}}</text>
-					</view>
-					<view class="scenic-info">
-						<view class="scenic-name">{{item.name}}</view>
-						<view class="scenic-time">{{item.reservationTime}}</view>
-						<view class="scenic-address">{{item.address}}</view>
-					</view>
-					<view class="reserve-btn">
-						<text class="reserve-text">预约</text>
+					<!-- 卡片背景装饰 -->
+					<view class="card-bg-pattern"></view>
+					
+					<!-- 卡片内容 -->
+					<view class="card-content">
+						<view class="spot-avatar-container">
+							<view class="spot-avatar">
+								<text class="avatar-letter">{{item.name.charAt(0)}}</text>
+								<view class="avatar-glow"></view>
+							</view>
+						</view>
+						
+						<view class="spot-info-area">
+							<view class="title-with-arrow">
+								<text class="spot-title">{{item.name}}</text>
+								<view class="click-arrow">
+									<text class="arrow-icon">›</text>
+								</view>
+							</view>
+							<view class="spot-meta">
+								<text class="spot-timing">{{item.reservationTime}}</text>
+							</view>
+						</view>
+						
+						<view class="price-display">
+							<text class="price-amount">{{ item.shortLink ? '¥60' : '免费' }}</text>
+						</view>
 					</view>
 				</view>
 			</view>
 			
 			<!-- 空状态 -->
-			<view class="empty-state" v-if="filteredScenicSpots.length === 0">
-				<text class="empty-text">暂无景点数据</text>
-				<text class="empty-tip">可以通过"关于"页面反馈添加景点</text>
+			<view class="empty-container" v-if="filteredScenicSpots.length === 0">
+				<view class="empty-illustration">
+					<text class="empty-icon">🗺️</text>
+					<view class="empty-glow"></view>
+				</view>
+				<text class="empty-title">暂无景点信息</text>
+				<text class="empty-subtitle">换个城市试试看吧</text>
 			</view>
 		</view>
+		
+		<!-- 底部渐变 -->
+		<view class="bottom-fade"></view>
 	</view>
 </template>
 
@@ -78,7 +97,6 @@ export default {
 			],
 			scenicSpots: [],
 			loading: false,
-			// 本地示例数据，当云函数不可用时使用
 			localScenicSpots: [
 				{
 					id: 1,
@@ -86,7 +104,8 @@ export default {
 					city: 'beijing',
 					reservationTime: '每日8:30开放预约',
 					address: '北京市东城区景山前街4号',
-					shortLink: '#小程序://故宫博物院/xxxxx'
+					shortLink: '#小程序://故宫博物院/zFDRqvEcHovytUs',
+					isHot: true
 				},
 				{
 					id: 2,
@@ -102,7 +121,8 @@ export default {
 					city: 'shanghai',
 					reservationTime: '提前7天9:00开放预约',
 					address: '上海市黄浦区人民大道201号',
-					shortLink: '#小程序://上海博物馆/xxxxx'
+					shortLink: '#小程序://上海博物馆/xxxxx',
+					isHot: true
 				},
 				{
 					id: 4,
@@ -136,7 +156,6 @@ export default {
 			return this.cityList[this.cityIndex] || this.cityList[0]
 		},
 		filteredScenicSpots() {
-			// 使用云数据或本地数据
 			const dataSource = this.scenicSpots.length > 0 ? this.scenicSpots : this.localScenicSpots
 			let spots = dataSource.filter(spot => spot.city === this.currentCity.code)
 			
@@ -151,12 +170,10 @@ export default {
 		}
 	},
 	onLoad() {
-		// 页面加载时初始化
 		this.initPage()
 	},
 	methods: {
 		async initPage() {
-			// 恢复上次选择的城市 (H5环境简化处理)
 			try {
 				const lastCity = uni.getStorageSync('last_selected_city')
 				if (lastCity) {
@@ -170,14 +187,12 @@ export default {
 				console.log('获取上次选择城市失败:', e)
 			}
 			
-			// 加载景点数据
 			await this.loadScenicSpots()
 		},
 		
 		async loadScenicSpots() {
 			this.loading = true
 			try {
-				// H5环境直接使用本地数据
 				console.log('使用本地示例数据')
 				this.scenicSpots = []
 			} catch (error) {
@@ -195,17 +210,14 @@ export default {
 		},
 		
 		onCitySelected(city) {
-			// 从城市选择页面返回时调用
 			const index = this.cityList.findIndex(c => c.code === city.code)
 			if (index !== -1) {
 				this.cityIndex = index
 			} else {
-				// 如果选择的城市不在默认列表中，添加到列表
 				this.cityList.push(city)
 				this.cityIndex = this.cityList.length - 1
 			}
 			
-			// 保存选择的城市 (H5环境简化处理)
 			try {
 				uni.setStorageSync('last_selected_city', JSON.stringify(city))
 			} catch (e) {
@@ -226,7 +238,6 @@ export default {
 				return
 			}
 			
-			// 跳转到其他小程序
 			this.jumpToAnotherMiniProgram(scenic)
 		},
 		
@@ -255,7 +266,6 @@ export default {
 			// #endif
 			
 			// #ifdef H5
-			// H5环境下模拟跳转效果
 			uni.showModal({
 				title: '预约提示',
 				content: `即将为您跳转到${scenic.name}的官方预约页面。在微信小程序中可直接跳转，H5版本仅供预览。`,
@@ -276,168 +286,349 @@ export default {
 </script>
 
 <style scoped>
+/* ==================== 基础容器 ==================== */
 .container {
-	background-color: #f5f5f5;
 	min-height: 100vh;
+	background: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
+	position: relative;
 }
 
-.header {
-	background-color: #fff;
-	border-bottom: 1rpx solid #f0f0f0;
+
+
+/* ==================== 头部区域 ==================== */
+.header-section {
+	position: relative;
+	padding-bottom: 40rpx;
 }
 
-.nav-bar {
+.header-bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 300rpx;
+	background: linear-gradient(135deg, #f6d55c 0%, #ed8936 100%);
+	border-radius: 0 0 50rpx 50rpx;
+	box-shadow: 0 10rpx 40rpx rgba(237, 137, 54, 0.3);
+}
+
+.header-content {
+	position: relative;
+	z-index: 2;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
-	height: 88rpx;
-	padding: 0 40rpx;
+	padding: 40rpx 40rpx 60rpx;
+	padding-top: calc(140rpx + env(safe-area-inset-top));
 }
 
-.nav-left {
-	
-}
-
-.app-title {
-	font-size: 36rpx;
-	color: #333;
-	font-weight: bold;
-}
-
-.nav-right {
+.brand-area {
 	display: flex;
-	align-items: center;
-	padding: 12rpx 24rpx;
-	background-color: #f8f8f8;
-	border-radius: 50rpx;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	padding-right: 20rpx;
 }
 
-.city-name {
+.brand-title {
+	font-size: 52rpx;
+	font-weight: 800;
+	color: #ffffff;
+	text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+	letter-spacing: -1rpx;
+	margin-bottom: 8rpx;
+	text-align: left;
+}
+
+.brand-subtitle {
 	font-size: 26rpx;
-	color: #333;
+	color: rgba(255, 255, 255, 0.9);
 	font-weight: 500;
+	letter-spacing: 1rpx;
+	text-align: left;
 }
 
-.city-arrow {
-	font-size: 20rpx;
-	color: #666;
-	margin-left: 8rpx;
+.location-selector {
+	margin-right: 32rpx;
 }
 
-.search-section {
-	padding: 20rpx 40rpx 30rpx;
-}
-
-.search-box {
+.location-pill {
 	display: flex;
 	align-items: center;
-	background-color: #f8f8f8;
+	background: rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(20rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.3);
 	border-radius: 50rpx;
-	padding: 20rpx 30rpx;
+	padding: 18rpx 28rpx;
+	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.location-pin {
+	font-size: 24rpx;
+	margin-right: 8rpx;
+}
+
+.location-name {
+	font-size: 28rpx;
+	color: #ffffff;
+	font-weight: 600;
+	margin-right: 8rpx;
+}
+
+.location-chevron {
+	font-size: 24rpx;
+	color: rgba(255, 255, 255, 0.8);
+	transform: rotate(90deg);
+}
+
+/* ==================== 搜索卡片 ==================== */
+.search-card {
+	position: relative;
+	z-index: 3;
+	margin: 0 40rpx;
+	margin-top: -20rpx;
+}
+
+.search-container {
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(20rpx);
+	border-radius: 28rpx;
+	padding: 28rpx 32rpx;
+	display: flex;
+	align-items: center;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+	border: 1rpx solid rgba(255, 255, 255, 0.8);
+}
+
+.search-icon-wrapper {
+	margin-right: 24rpx;
 }
 
 .search-icon {
-	font-size: 28rpx;
-	color: #999;
-	margin-right: 20rpx;
+	font-size: 32rpx;
+	color: #ed8936;
 }
 
-.search-input {
+.search-field {
 	flex: 1;
-	font-size: 28rpx;
-	color: #333;
+	font-size: 30rpx;
+	color: #2d3748;
+	background: transparent;
 	border: none;
 	outline: none;
-	background: transparent;
 }
 
-.content {
-	padding: 30rpx 40rpx;
+.search-placeholder {
+	color: #a0aec0;
 }
 
-.scenic-list {
-	
+/* ==================== 主内容区域 ==================== */
+.main-content {
+	padding: 20rpx 40rpx 40rpx;
 }
 
-.scenic-item {
+
+
+/* ==================== 景点卡片 ==================== */
+.spots-grid {
 	display: flex;
-	align-items: center;
-	background-color: #fff;
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+	flex-direction: column;
+	gap: 32rpx;
+	width: 100%;
 }
 
-.scenic-logo {
-	width: 80rpx;
-	height: 80rpx;
-	background: linear-gradient(135deg, #3cc51f, #2aa515);
+.spot-card {
+	position: relative;
+	background: #ffffff;
+	border-radius: 32rpx;
+	padding: 40rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+	border: 1rpx solid rgba(255, 255, 255, 0.8);
+	overflow: hidden;
+	transition: all 0.3s ease;
+	cursor: pointer;
+}
+
+.spot-card:hover {
+	transform: translateY(-2rpx);
+	box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.12);
+}
+
+.spot-card:active {
+	transform: translateY(1rpx);
+	box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.card-bg-pattern {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 200rpx;
+	height: 200rpx;
+	background: radial-gradient(circle, rgba(246, 213, 92, 0.1) 0%, transparent 70%);
 	border-radius: 50%;
+	transform: translate(50rpx, -50rpx);
+}
+
+.card-content {
+	display: flex;
+	align-items: flex-start;
+	position: relative;
+	z-index: 2;
+}
+
+.spot-avatar-container {
+	position: relative;
+	margin-right: 32rpx;
+}
+
+.spot-avatar {
+	width: 96rpx;
+	height: 96rpx;
+	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+	border-radius: 24rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	margin-right: 30rpx;
+	position: relative;
+	box-shadow: 0 6rpx 20rpx rgba(66, 153, 225, 0.3);
 }
 
-.logo-text {
-	font-size: 32rpx;
-	color: #fff;
-	font-weight: bold;
+.avatar-letter {
+	font-size: 36rpx;
+	color: #ffffff;
+	font-weight: 700;
 }
 
-.scenic-info {
+.avatar-glow {
+	position: absolute;
+	inset: -4rpx;
+	background: linear-gradient(135deg, #4299e1, #3182ce);
+	border-radius: 28rpx;
+	opacity: 0.3;
+	filter: blur(8rpx);
+	z-index: -1;
+}
+
+
+
+.spot-info-area {
 	flex: 1;
 }
 
-.scenic-name {
+.spot-title {
 	font-size: 32rpx;
-	color: #333;
-	font-weight: 500;
-	margin-bottom: 10rpx;
+	font-weight: 700;
+	color: #2d3748;
+	margin-bottom: 16rpx;
+	line-height: 1.3;
 }
 
-.scenic-time {
-	font-size: 24rpx;
-	color: #3cc51f;
-	margin-bottom: 8rpx;
+.spot-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 8rpx;
 }
 
-.scenic-address {
+.spot-timing {
+	font-size: 26rpx;
+	color: #4299e1;
+	font-weight: 600;
+}
+
+.spot-location {
 	font-size: 24rpx;
-	color: #999;
+	color: #718096;
 	line-height: 1.4;
 }
 
-.reserve-btn {
-	padding: 15rpx 30rpx;
-	background-color: #3cc51f;
-	border-radius: 50rpx;
+.title-with-arrow {
+	display: flex;
+	align-items: baseline;
+	gap: 8rpx;
+	margin-bottom: 16rpx;
 }
 
-.reserve-text {
-	font-size: 26rpx;
-	color: #fff;
-	font-weight: 500;
+.price-display {
+	margin-left: 24rpx;
 }
 
-.empty-state {
+.price-amount {
+	font-size: 24rpx;
+	font-weight: 700;
+	color: #e53e3e;
+	background: linear-gradient(135deg, #fed7d7 0%, #fbb6ce 100%);
+	padding: 8rpx 16rpx;
+	border-radius: 16rpx;
+	border: 1rpx solid rgba(229, 62, 62, 0.2);
+}
+
+.click-arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28rpx;
+	height: 28rpx;
+	background: rgba(255, 20, 147, 0.1);
+	border-radius: 50%;
+	border: 1rpx solid rgba(255, 20, 147, 0.2);
+	flex-shrink: 0;
+	transform: translateY(-2rpx);
+}
+
+.arrow-icon {
+	font-size: 18rpx;
+	color: #ff1493;
+	font-weight: 600;
+}
+
+/* ==================== 空状态 ==================== */
+.empty-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	padding: 100rpx 40rpx;
+	padding: 120rpx 40rpx;
 }
 
-.empty-text {
+.empty-illustration {
+	position: relative;
+	margin-bottom: 40rpx;
+}
+
+.empty-icon {
+	font-size: 120rpx;
+	opacity: 0.6;
+}
+
+.empty-glow {
+	position: absolute;
+	inset: -20rpx;
+	background: radial-gradient(circle, rgba(246, 213, 92, 0.2) 0%, transparent 70%);
+	border-radius: 50%;
+	filter: blur(20rpx);
+	z-index: -1;
+}
+
+.empty-title {
 	font-size: 32rpx;
-	color: #999;
-	margin-bottom: 20rpx;
+	color: #4a5568;
+	font-weight: 600;
+	margin-bottom: 12rpx;
 }
 
-.empty-tip {
+.empty-subtitle {
 	font-size: 26rpx;
-	color: #ccc;
-	text-align: center;
+	color: #718096;
+}
+
+/* ==================== 底部渐变 ==================== */
+.bottom-fade {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 40rpx;
+	background: linear-gradient(180deg, transparent 0%, rgba(245, 243, 240, 0.8) 100%);
+	pointer-events: none;
 }
 </style>
