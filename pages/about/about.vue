@@ -6,7 +6,7 @@
 			<view class="header-content">
 				<view class="brand-area">
 					<text class="brand-title">快约景</text>
-					<text class="brand-subtitle">让旅行更简单</text>
+					<text class="brand-subtitle">一站式约景小助手</text>
 				</view>
 			</view>
 		</view>
@@ -20,7 +20,7 @@
 					<text class="section-title">产品说明</text>
 				</view>
 				<view class="section-content">
-					<text class="description">中国各大景点预约入口聚合，让用户快速找到预约入口，注重清爽简洁的交互体验。</text>
+					<text class="description">中国各大景点预约入口聚合，让用户快速找到预约入口。</text>
 				</view>
 			</view>
 			
@@ -52,8 +52,8 @@
 					<view class="contact-left">
 						<view class="contact-icon">💬</view>
 						<view class="contact-info">
-							<text class="contact-title">用户反馈</text>
-							<text class="contact-subtitle">告诉我们您的建议</text>
+							<text class="contact-title">景点反馈</text>
+							<text class="contact-subtitle">告诉我们您想收录的景点</text>
 						</view>
 					</view>
 					<view class="contact-arrow">
