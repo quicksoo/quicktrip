@@ -33,10 +33,15 @@
   "uniapp": {
     "framework": "vue3",
     "compiler": "vite",
-    "platform": ["mp-weixin"]
+    "platform": [
+      "mp-weixin"
+    ]
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "text-encoding": "^0.7.0",
+    "weapp-qrcode": "^1.0.0"
+  },
   "browserslist": [
     "last 2 versions",
     "> 1%",

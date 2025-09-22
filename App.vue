@@ -6,6 +6,7 @@ export default {
 		// #ifdef MP-WEIXIN
 		if (typeof wx !== 'undefined' && wx.cloud) {
 			wx.cloud.init({
+				env: 'cloud1-6gf1u4bif4e072cf',
 				traceUser: true
 			})
 		}
