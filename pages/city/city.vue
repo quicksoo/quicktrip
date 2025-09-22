@@ -1,23 +1,26 @@
 <template>
 	<view class="city-container">
-		<!-- 头部 -->
-		<view class="header">
-			<view class="nav-bar">
-				<view class="nav-left" @tap="goBack">
-					<text class="back-icon">‹</text>
+		<!-- 头部区域 -->
+		<view class="header-section">
+			<view class="header-bg"></view>
+			<view class="header-content">
+				<view class="nav-bar">
+					<view class="nav-left" @tap="goBack">
+						<view class="back-button">
+							<text class="back-icon">‹</text>
+						</view>
+					</view>
+					<view class="nav-center"></view>
+					<view class="nav-right"></view>
 				</view>
-				<view class="nav-title">选择城市</view>
-				<view class="nav-right">
-					<text class="more-icon">⋯</text>
-				</view>
-			</view>
 
-			<!-- 搜索框 -->
-			<view class="search-section">
-				<view class="search-box">
-					<text class="search-icon">🔍</text>
-					<input class="search-input" v-model="searchKeyword" placeholder="城市/拼音" @input="onSearchInput"
-						placeholder-style="color: #ccc" />
+				<!-- 搜索框 -->
+				<view class="search-section">
+					<view class="search-box">
+						<text class="search-icon">🔍</text>
+						<input class="search-input" v-model="searchKeyword" placeholder="城市/拼音" @input="onSearchInput"
+							placeholder-style="color: rgba(255,255,255,0.6)" />
+					</view>
 				</view>
 			</view>
 		</view>
@@ -26,26 +29,44 @@
 		<scroll-view class="content" scroll-y="true">
 			<!-- 当前定位城市 -->
 			<view class="location-section">
-				<view class="location-item">
-					<text class="location-icon">📍</text>
-					<text class="location-text">当前定位城市：</text>
-					<text class="current-city">{{ currentLocationCity }}</text>
+				<view class="location-card" @tap="selectCurrentCity">
+					<view class="card-bg-pattern"></view>
+					<view class="location-content">
+						<view class="location-icon-wrapper">
+							<text class="location-icon">📍</text>
+						</view>
+						<view class="location-info">
+							<text class="location-label">当前定位城市</text>
+							<text class="current-city">{{ currentLocationCity }}</text>
+						</view>
+						<view class="location-arrow">
+							<image class="arrow-icon" src="/static/right-arr.png" mode="aspectFit"></image>
+						</view>
+					</view>
 				</view>
 			</view>
 
 			<!-- 热门城市 -->
 			<view class="hot-cities-section">
-				<view class="section-title">热门城市</view>
+				<view class="section-header">
+					<view class="section-icon">🔥</view>
+					<text class="section-title">热门城市</text>
+				</view>
 				<view class="cities-grid">
 					<view class="city-item" :class="{ 'active': item.code === selectedCityCode }"
 						v-for="(item, index) in hotCities" :key="index" @tap="selectCity(item)">
 						<text class="city-name">{{ item.name }}</text>
+						<view class="city-glow" v-if="item.code === selectedCityCode"></view>
 					</view>
 				</view>
 			</view>
 
 			<!-- 城市列表 -->
 			<view class="cities-list-section">
+				<view class="list-header">
+					<view class="section-icon">🏙️</view>
+					<text class="section-title">全部城市</text>
+				</view>
 				<!-- 字母索引对应的城市 -->
 				<view class="letter-section" v-for="(letter, index) in sortedLetters" :key="index"
 					:id="'letter-' + letter">
@@ -54,6 +75,9 @@
 						<view class="city-list-item" v-for="(city, cityIndex) in citiesByLetter[letter]"
 							:key="cityIndex" @tap="selectCity(city)">
 							<text class="city-list-name">{{ city.name }}</text>
+							<view class="city-arrow">
+								<image class="arrow-icon" src="/static/right-arr.png" mode="aspectFit"></image>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -67,6 +91,9 @@
 				<text class="letter-index-text">{{ letter }}</text>
 			</view>
 		</view>
+		
+		<!-- 底部渐变 -->
+		<view class="bottom-fade"></view>
 	</view>
 </template>
 
@@ -461,6 +488,15 @@ export default {
 			this.searchKeyword = e.detail.value
 		},
 
+		selectCurrentCity() {
+			// 选择当前定位城市
+			const currentCity = {
+				name: this.currentLocationCity,
+				code: 'xian' // 这里可以根据实际定位获取城市代码
+			}
+			this.selectCity(currentCity)
+		},
+		
 		selectCity(city) {
 			// 返回选中的城市信息
 			const pages = getCurrentPages()
@@ -485,17 +521,35 @@ export default {
 </script>
 
 <style scoped>
+/* ==================== 基础容器 ==================== */
 .city-container {
-	background-color: #f5f5f5;
 	min-height: 100vh;
+	background: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
 	position: relative;
 }
 
-.header {
-	background-color: #fff;
+/* ==================== 头部区域 ==================== */
+.header-section {
+	position: relative;
 	position: sticky;
 	top: 0;
 	z-index: 100;
+}
+
+.header-bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 100%;
+	background: linear-gradient(135deg, #f6d55c 0%, #ed8936 100%);
+	box-shadow: 0 4rpx 20rpx rgba(237, 137, 54, 0.3);
+}
+
+.header-content {
+	position: relative;
+	z-index: 2;
+	padding-top: env(safe-area-inset-top);
 }
 
 .nav-bar {
@@ -504,7 +558,6 @@ export default {
 	justify-content: space-between;
 	height: 88rpx;
 	padding: 0 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
 }
 
 .nav-left,
@@ -516,21 +569,27 @@ export default {
 	justify-content: center;
 }
 
+.back-button {
+	width: 48rpx;
+	height: 48rpx;
+	background: rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(20rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
 .back-icon {
-	font-size: 40rpx;
-	color: #333;
-	font-weight: bold;
+	font-size: 28rpx;
+	color: #ffffff;
+	font-weight: 700;
 }
 
-.nav-title {
-	font-size: 32rpx;
-	color: #333;
-	font-weight: 500;
-}
-
-.more-icon {
-	font-size: 32rpx;
-	color: #333;
+.nav-center {
+	flex: 1;
 }
 
 .search-section {
@@ -540,149 +599,307 @@ export default {
 .search-box {
 	display: flex;
 	align-items: center;
-	background-color: #f8f8f8;
+	background: rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(20rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.3);
 	border-radius: 50rpx;
 	padding: 20rpx 30rpx;
+	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .search-icon {
 	font-size: 28rpx;
-	color: #999;
+	color: rgba(255, 255, 255, 0.8);
 	margin-right: 20rpx;
 }
 
 .search-input {
 	flex: 1;
 	font-size: 28rpx;
-	color: #333;
+	color: #ffffff;
 	border: none;
 	outline: none;
 	background: transparent;
 }
 
+/* ==================== 内容区域 ==================== */
 .content {
 	height: calc(100vh - 200rpx);
-	padding-bottom: 40rpx;
+	padding: 20rpx 0 40rpx;
 }
 
+/* ==================== 定位区域 ==================== */
 .location-section {
-	background-color: #fff;
-	margin-bottom: 20rpx;
+	padding: 0 40rpx 20rpx;
 }
 
-.location-item {
+.location-card {
+	position: relative;
+	background: #ffffff;
+	border-radius: 32rpx;
+	padding: 32rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+	border: 1rpx solid rgba(255, 255, 255, 0.8);
+	overflow: hidden;
+}
+
+.card-bg-pattern {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 150rpx;
+	height: 150rpx;
+	background: radial-gradient(circle, rgba(246, 213, 92, 0.1) 0%, transparent 70%);
+	border-radius: 50%;
+	transform: translate(30rpx, -30rpx);
+}
+
+.location-content {
 	display: flex;
 	align-items: center;
-	padding: 30rpx;
+	justify-content: space-between;
+	position: relative;
+	z-index: 2;
+}
+
+.location-icon-wrapper {
+	width: 56rpx;
+	height: 56rpx;
+	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+	border-radius: 16rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(66, 153, 225, 0.3);
 }
 
 .location-icon {
-	font-size: 28rpx;
-	margin-right: 15rpx;
+	font-size: 24rpx;
+	color: #ffffff;
 }
 
-.location-text {
-	font-size: 28rpx;
-	color: #666;
+.location-info {
+	display: flex;
+	flex-direction: column;
+}
+
+.location-label {
+	font-size: 24rpx;
+	color: #718096;
+	margin-bottom: 4rpx;
 }
 
 .current-city {
 	font-size: 28rpx;
-	color: #333;
-	font-weight: 500;
+	color: #2d3748;
+	font-weight: 600;
 }
 
+.location-arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40rpx;
+	height: 40rpx;
+}
+
+.location-arrow .arrow-icon {
+	width: 32rpx;
+	height: 32rpx;
+	opacity: 0.8;
+}
+
+.location-card {
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.location-card:active {
+	transform: translateY(1rpx);
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+}
+
+/* ==================== 热门城市 ==================== */
 .hot-cities-section {
-	background-color: #fff;
-	margin-bottom: 20rpx;
+	padding: 0 40rpx 20rpx;
+}
+
+.section-header,
+.list-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 24rpx;
+}
+
+.section-icon {
+	font-size: 28rpx;
+	margin-right: 12rpx;
 }
 
 .section-title {
-	padding: 30rpx 30rpx 20rpx;
 	font-size: 28rpx;
-	color: #666;
+	color: #2d3748;
+	font-weight: 600;
 }
 
 .cities-grid {
-	display: flex;
-	flex-wrap: wrap;
-	padding: 0 20rpx 30rpx;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16rpx;
 }
 
 .city-item {
-	width: calc(25% - 20rpx);
-	margin: 10rpx;
-	padding: 20rpx 0;
-	background-color: #f8f8f8;
-	border-radius: 12rpx;
+	position: relative;
+	padding: 24rpx 12rpx;
+	background: #ffffff;
+	border-radius: 20rpx;
 	text-align: center;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	border: 1rpx solid rgba(255, 255, 255, 0.8);
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+
+.city-item:active {
+	transform: translateY(1rpx);
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.12);
 }
 
 .city-item.active {
-	background-color: #3cc51f;
+	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+	box-shadow: 0 6rpx 24rpx rgba(66, 153, 225, 0.4);
 }
 
 .city-name {
 	font-size: 26rpx;
-	color: #333;
+	color: #2d3748;
+	font-weight: 500;
+	position: relative;
+	z-index: 2;
 }
 
 .city-item.active .city-name {
-	color: #fff;
+	color: #ffffff;
 }
 
+.city-glow {
+	position: absolute;
+	inset: -4rpx;
+	background: linear-gradient(135deg, #4299e1, #3182ce);
+	border-radius: 24rpx;
+	opacity: 0.3;
+	filter: blur(8rpx);
+	z-index: 1;
+}
+
+/* ==================== 城市列表 ==================== */
 .cities-list-section {
-	background-color: #fff;
+	padding: 0 40rpx;
+}
+
+.list-header {
+	margin-bottom: 16rpx;
 }
 
 .letter-section {
-	border-bottom: 1rpx solid #f0f0f0;
+	background: #ffffff;
+	border-radius: 24rpx;
+	margin-bottom: 16rpx;
+	overflow: hidden;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	border: 1rpx solid rgba(255, 255, 255, 0.8);
 }
 
 .letter-title {
-	padding: 20rpx 30rpx;
+	padding: 20rpx 32rpx;
 	font-size: 24rpx;
-	color: #999;
-	background-color: #f8f8f8;
-	font-weight: 500;
+	color: #718096;
+	background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+	font-weight: 600;
 }
 
-.cities-in-letter {}
-
 .city-list-item {
-	padding: 25rpx 30rpx;
-	border-bottom: 1rpx solid #f8f8f8;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 24rpx 32rpx;
+	border-bottom: 1rpx solid #f7fafc;
+	transition: all 0.2s ease;
 }
 
 .city-list-item:last-child {
 	border-bottom: none;
 }
 
-.city-list-name {
-	font-size: 28rpx;
-	color: #333;
+.city-list-item:active {
+	background: #f7fafc;
 }
 
+.city-list-name {
+	font-size: 28rpx;
+	color: #2d3748;
+	font-weight: 500;
+}
+
+.city-arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40rpx;
+	height: 40rpx;
+}
+
+.city-arrow .arrow-icon {
+	width: 32rpx;
+	height: 32rpx;
+	opacity: 0.8;
+}
+
+/* ==================== 字母索引 ==================== */
 .letter-index {
 	position: fixed;
 	right: 20rpx;
 	top: 50%;
 	transform: translateY(-50%);
 	z-index: 200;
+	background: rgba(255, 255, 255, 0.9);
+	backdrop-filter: blur(20rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.3);
+	border-radius: 20rpx;
+	padding: 8rpx 0;
+	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .letter-index-item {
 	width: 40rpx;
-	height: 40rpx;
+	height: 32rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	margin-bottom: 5rpx;
+	margin: 2rpx 0;
+	transition: all 0.2s ease;
+}
+
+.letter-index-item:active {
+	background: rgba(66, 153, 225, 0.1);
+	border-radius: 8rpx;
 }
 
 .letter-index-text {
 	font-size: 20rpx;
-	color: #666;
-	font-weight: 500;
+	color: #4a5568;
+	font-weight: 600;
+}
+
+/* ==================== 底部渐变 ==================== */
+.bottom-fade {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 40rpx;
+	background: linear-gradient(180deg, transparent 0%, rgba(245, 243, 240, 0.8) 100%);
+	pointer-events: none;
 }
 </style>

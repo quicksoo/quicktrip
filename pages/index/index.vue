@@ -48,7 +48,7 @@
 							<view class="title-with-arrow">
 								<text class="spot-title">{{item.name}}</text>
 								<view class="click-arrow">
-									<text class="arrow-icon">›</text>
+									<image class="arrow-icon" src="/static/right-arr.png" mode="aspectFit"></image>
 								</view>
 							</view>
 							<view class="spot-meta">
@@ -117,36 +117,37 @@ export default {
 				},
 				{
 					id: 3,
-					name: '上海博物馆',
-					city: 'shanghai',
-					reservationTime: '提前7天9:00开放预约',
-					address: '上海市黄浦区人民大道201号',
-					shortLink: '#小程序://上海博物馆/xxxxx',
+					name: '天安门',
+					city: 'beijing',
+					reservationTime: '每日8:30开放预约',
+					address: '北京市东城区景山前街4号',
+					shortLink: '#小程序://故宫博物院/zFDRqvEcHovytUs',
 					isHot: true
 				},
 				{
 					id: 4,
-					name: '外滩',
-					city: 'shanghai',
-					reservationTime: '无需预约',
-					address: '上海市黄浦区中山东一路',
-					shortLink: ''
+					name: '八达岭长城',
+					city: 'beijing',
+					reservationTime: '提前7天预约',
+					address: '北京市东城区天坛路甲1号',
+					shortLink: '#小程序://天坛公园/xxxxx'
 				},
 				{
 					id: 5,
-					name: '广州塔',
-					city: 'guangzhou',
-					reservationTime: '提前3天预约',
-					address: '广州市海珠区阅江西路222号',
-					shortLink: '#小程序://广州塔/xxxxx'
+					name: '颐和园',
+					city: 'beijing',
+					reservationTime: '每日8:30开放预约',
+					address: '北京市东城区景山前街4号',
+					shortLink: '#小程序://故宫博物院/zFDRqvEcHovytUs',
+					isHot: true
 				},
 				{
 					id: 6,
-					name: '西湖',
-					city: 'hangzhou',
-					reservationTime: '无需预约',
-					address: '浙江省杭州市西湖区龙井路1号',
-					shortLink: ''
+					name: '雍和宫',
+					city: 'beijing',
+					reservationTime: '提前7天预约',
+					address: '北京市东城区天坛路甲1号',
+					shortLink: '#小程序://天坛公园/xxxxx'
 				}
 			]
 		}
@@ -319,7 +320,7 @@ export default {
 	align-items: flex-start;
 	justify-content: space-between;
 	padding: 40rpx 40rpx 60rpx;
-	padding-top: calc(140rpx + env(safe-area-inset-top));
+	padding-top: calc(150rpx + env(safe-area-inset-top));
 }
 
 .brand-area {
@@ -381,50 +382,9 @@ export default {
 	transform: rotate(90deg);
 }
 
-/* ==================== 搜索卡片 ==================== */
-.search-card {
-	position: relative;
-	z-index: 3;
-	margin: 0 40rpx;
-	margin-top: -20rpx;
-}
-
-.search-container {
-	background: rgba(255, 255, 255, 0.95);
-	backdrop-filter: blur(20rpx);
-	border-radius: 28rpx;
-	padding: 28rpx 32rpx;
-	display: flex;
-	align-items: center;
-	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
-	border: 1rpx solid rgba(255, 255, 255, 0.8);
-}
-
-.search-icon-wrapper {
-	margin-right: 24rpx;
-}
-
-.search-icon {
-	font-size: 32rpx;
-	color: #ed8936;
-}
-
-.search-field {
-	flex: 1;
-	font-size: 30rpx;
-	color: #2d3748;
-	background: transparent;
-	border: none;
-	outline: none;
-}
-
-.search-placeholder {
-	color: #a0aec0;
-}
-
 /* ==================== 主内容区域 ==================== */
 .main-content {
-	padding: 20rpx 40rpx 40rpx;
+	padding: 10rpx 40rpx 40rpx;
 }
 
 
@@ -485,13 +445,13 @@ export default {
 .spot-avatar {
 	width: 96rpx;
 	height: 96rpx;
-	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+	background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
 	border-radius: 24rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	position: relative;
-	box-shadow: 0 6rpx 20rpx rgba(66, 153, 225, 0.3);
+	box-shadow: 0 6rpx 20rpx rgba(74, 222, 128, 0.3);
 }
 
 .avatar-letter {
@@ -503,7 +463,7 @@ export default {
 .avatar-glow {
 	position: absolute;
 	inset: -4rpx;
-	background: linear-gradient(135deg, #4299e1, #3182ce);
+	background: linear-gradient(135deg, #4ade80, #22c55e);
 	border-radius: 28rpx;
 	opacity: 0.3;
 	filter: blur(8rpx);
@@ -567,19 +527,16 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 28rpx;
-	height: 28rpx;
-	background: rgba(255, 20, 147, 0.1);
-	border-radius: 50%;
-	border: 1rpx solid rgba(255, 20, 147, 0.2);
+	width: 32rpx;
+	height: 32rpx;
 	flex-shrink: 0;
-	transform: translateY(-2rpx);
+	transform: translateY(4rpx);
 }
 
 .arrow-icon {
-	font-size: 18rpx;
-	color: #ff1493;
-	font-weight: 600;
+	width: 32rpx;
+	height: 32rpx;
+	opacity: 0.8;
 }
 
 /* ==================== 空状态 ==================== */

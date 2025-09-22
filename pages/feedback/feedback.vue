@@ -1,63 +1,134 @@
 <template>
 	<view class="feedback-container">
-		<view class="form-section">
-			<view class="form-title">用户反馈</view>
-			<view class="form-subtitle">请填写您想要添加的景点信息</view>
-			
-			<view class="form-item">
-				<view class="label">选择省份</view>
-				<picker @change="onProvinceChange" :value="provinceIndex" :range="provinces">
-					<view class="picker">
-						<text class="picker-text">{{selectedProvince || '请选择省份'}}</text>
-						<text class="arrow">></text>
+		<!-- 头部区域 -->
+		<view class="header-section">
+			<view class="header-bg"></view>
+			<view class="header-content">
+				<view class="nav-bar">
+					<view class="nav-left" @tap="goBack">
+						<view class="back-button">
+							<text class="back-icon">‹</text>
+						</view>
 					</view>
-				</picker>
-			</view>
-			
-			<view class="form-item">
-				<view class="label">选择城市</view>
-				<picker @change="onCityChange" :value="cityIndex" :range="cities" :disabled="!selectedProvince">
-					<view class="picker" :class="{'disabled': !selectedProvince}">
-						<text class="picker-text">{{selectedCity || '请选择城市'}}</text>
-						<text class="arrow">></text>
+					<view class="nav-center"></view>
+					<view class="nav-right"></view>
+				</view>
+				<view class="header-info">
+					<view class="header-icon">💬</view>
+					<view class="header-text">
+						<text class="form-title">用户反馈</text>
+						<text class="form-subtitle">请填写您想要添加的景点信息</text>
 					</view>
-				</picker>
-			</view>
-			
-			<view class="form-item">
-				<view class="label">景点名称</view>
-				<input 
-					class="input" 
-					v-model="scenicSpotName" 
-					placeholder="请输入景点名称"
-					placeholder-style="color: #ccc"
-				/>
-			</view>
-			
-			<view class="form-item">
-				<view class="label">景点地址（可选）</view>
-				<input 
-					class="input" 
-					v-model="scenicSpotAddress" 
-					placeholder="请输入景点详细地址"
-					placeholder-style="color: #ccc"
-				/>
-			</view>
-			
-			<view class="form-item">
-				<view class="label">预约入口信息（可选）</view>
-				<textarea 
-					class="textarea" 
-					v-model="reservationInfo" 
-					placeholder="请提供景点预约入口信息，如小程序名称、官网链接等"
-					placeholder-style="color: #ccc"
-				/>
+				</view>
 			</view>
 		</view>
 		
-		<view class="submit-section">
-			<button class="submit-btn" @tap="submitFeedback" :disabled="!canSubmit">提交反馈</button>
+		<!-- 表单区域 -->
+		<view class="form-section">
+			<view class="form-card">
+				<view class="card-bg-pattern"></view>
+				<view class="form-header">
+					<view class="form-icon">📍</view>
+					<text class="form-section-title">位置信息</text>
+				</view>
+				
+				<view class="form-item">
+					<view class="label">
+						<text class="label-text">选择省份</text>
+						<text class="required">*</text>
+					</view>
+					<picker @change="onProvinceChange" :value="provinceIndex" :range="provinces">
+						<view class="picker">
+							<text class="picker-text" :class="{'placeholder': !selectedProvince}">{{selectedProvince || '请选择省份'}}</text>
+							<view class="picker-arrow">
+								<text class="arrow-icon">›</text>
+							</view>
+						</view>
+					</picker>
+				</view>
+				
+				<view class="form-item">
+					<view class="label">
+						<text class="label-text">选择城市</text>
+						<text class="required">*</text>
+					</view>
+					<picker @change="onCityChange" :value="cityIndex" :range="cities" :disabled="!selectedProvince">
+						<view class="picker" :class="{'disabled': !selectedProvince}">
+							<text class="picker-text" :class="{'placeholder': !selectedCity}">{{selectedCity || '请选择城市'}}</text>
+							<view class="picker-arrow">
+								<text class="arrow-icon">›</text>
+							</view>
+						</view>
+					</picker>
+				</view>
+			</view>
+			
+			<view class="form-card">
+				<view class="card-bg-pattern"></view>
+				<view class="form-header">
+					<view class="form-icon">🏛️</view>
+					<text class="form-section-title">景点信息</text>
+				</view>
+				
+				<view class="form-item">
+					<view class="label">
+						<text class="label-text">景点名称</text>
+						<text class="required">*</text>
+					</view>
+					<view class="input-wrapper">
+						<input 
+							class="input" 
+							v-model="scenicSpotName" 
+							placeholder="请输入景点名称"
+							placeholder-style="color: #a0aec0"
+						/>
+					</view>
+				</view>
+				
+				<view class="form-item">
+					<view class="label">
+						<text class="label-text">景点地址</text>
+						<text class="optional">（可选）</text>
+					</view>
+					<view class="input-wrapper">
+						<input 
+							class="input" 
+							v-model="scenicSpotAddress" 
+							placeholder="请输入景点详细地址"
+							placeholder-style="color: #a0aec0"
+						/>
+					</view>
+				</view>
+				
+				<view class="form-item">
+					<view class="label">
+						<text class="label-text">预约入口信息</text>
+						<text class="optional">（可选）</text>
+					</view>
+					<view class="textarea-wrapper">
+						<textarea 
+							class="textarea" 
+							v-model="reservationInfo" 
+							placeholder="请提供景点预约入口信息，如小程序名称、官网链接等"
+							placeholder-style="color: #a0aec0"
+						/>
+					</view>
+				</view>
+			</view>
 		</view>
+		
+		<!-- 提交按钮 -->
+		<view class="submit-section">
+			<view class="submit-wrapper">
+				<button class="submit-btn" @tap="submitFeedback" :disabled="!canSubmit" :class="{'active': canSubmit}">
+					<text class="submit-text">提交反馈</text>
+					<view class="submit-glow" v-if="canSubmit"></view>
+				</button>
+			</view>
+		</view>
+		
+		<!-- 底部渐变 -->
+		<view class="bottom-fade"></view>
 	</view>
 </template>
 
@@ -97,6 +168,10 @@ export default {
 		}
 	},
 	methods: {
+		goBack() {
+			uni.navigateBack()
+		},
+		
 		onProvinceChange(e) {
 			const index = e.detail.value
 			this.provinceIndex = index
@@ -178,106 +253,347 @@ export default {
 </script>
 
 <style scoped>
+/* ==================== 基础容器 ==================== */
 .feedback-container {
-	background-color: #f5f5f5;
 	min-height: 100vh;
-	padding-bottom: 120rpx;
+	background: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
+	position: relative;
+	padding-bottom: 140rpx;
 }
 
-.form-section {
-	padding: 40rpx;
+/* ==================== 头部区域 ==================== */
+.header-section {
+	position: relative;
+	padding-bottom: 40rpx;
+}
+
+.header-bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 280rpx;
+	background: linear-gradient(135deg, #f6d55c 0%, #ed8936 100%);
+	border-radius: 0 0 50rpx 50rpx;
+	box-shadow: 0 10rpx 40rpx rgba(237, 137, 54, 0.3);
+}
+
+.header-content {
+	position: relative;
+	z-index: 2;
+	padding-top: env(safe-area-inset-top);
+}
+
+.nav-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 88rpx;
+	padding: 0 30rpx;
+}
+
+.nav-left,
+.nav-right {
+	width: 60rpx;
+	height: 60rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.nav-center {
+	flex: 1;
+}
+
+.back-button {
+	width: 48rpx;
+	height: 48rpx;
+	background: rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(20rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.back-icon {
+	font-size: 28rpx;
+	color: #ffffff;
+	font-weight: 700;
+}
+
+.header-info {
+	display: flex;
+	align-items: center;
+	padding: 20rpx 40rpx 60rpx;
+}
+
+.header-icon {
+	font-size: 48rpx;
+	margin-right: 24rpx;
+}
+
+.header-text {
+	display: flex;
+	flex-direction: column;
 }
 
 .form-title {
 	font-size: 48rpx;
-	font-weight: bold;
-	color: #333;
-	margin-bottom: 10rpx;
+	font-weight: 800;
+	color: #ffffff;
+	text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+	letter-spacing: -1rpx;
+	margin-bottom: 8rpx;
 }
 
 .form-subtitle {
+	font-size: 26rpx;
+	color: rgba(255, 255, 255, 0.9);
+	font-weight: 500;
+	letter-spacing: 0.5rpx;
+}
+
+/* ==================== 表单区域 ==================== */
+.form-section {
+	padding: 10rpx 40rpx 40rpx;
+}
+
+.form-card {
+	position: relative;
+	background: #ffffff;
+	border-radius: 32rpx;
+	padding: 40rpx;
+	margin-bottom: 32rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+	border: 1rpx solid rgba(255, 255, 255, 0.8);
+	overflow: hidden;
+}
+
+.card-bg-pattern {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 200rpx;
+	height: 200rpx;
+	background: radial-gradient(circle, rgba(246, 213, 92, 0.1) 0%, transparent 70%);
+	border-radius: 50%;
+	transform: translate(50rpx, -50rpx);
+}
+
+.form-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 32rpx;
+	position: relative;
+	z-index: 2;
+}
+
+.form-icon {
+	font-size: 32rpx;
+	margin-right: 16rpx;
+}
+
+.form-section-title {
 	font-size: 28rpx;
-	color: #666;
-	margin-bottom: 60rpx;
+	font-weight: 700;
+	color: #2d3748;
 }
 
 .form-item {
-	background-color: #fff;
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 30rpx;
+	margin-bottom: 32rpx;
+	position: relative;
+	z-index: 2;
+}
+
+.form-item:last-child {
+	margin-bottom: 0;
 }
 
 .label {
-	font-size: 28rpx;
-	color: #333;
-	margin-bottom: 20rpx;
-	font-weight: 500;
+	display: flex;
+	align-items: center;
+	margin-bottom: 16rpx;
 }
 
+.label-text {
+	font-size: 28rpx;
+	color: #2d3748;
+	font-weight: 600;
+}
+
+.required {
+	font-size: 24rpx;
+	color: #e53e3e;
+	margin-left: 4rpx;
+}
+
+.optional {
+	font-size: 24rpx;
+	color: #718096;
+	margin-left: 4rpx;
+}
+
+/* ==================== 选择器样式 ==================== */
 .picker {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 20rpx 0;
+	padding: 24rpx 20rpx;
+	background: #f7fafc;
+	border-radius: 16rpx;
+	border: 2rpx solid transparent;
+	transition: all 0.3s ease;
+}
+
+.picker:active {
+	border-color: #4299e1;
+	background: #ebf8ff;
 }
 
 .picker.disabled {
 	opacity: 0.5;
+	background: #edf2f7;
 }
 
 .picker-text {
 	font-size: 28rpx;
-	color: #333;
+	color: #2d3748;
+	font-weight: 500;
 }
 
-.arrow {
-	font-size: 28rpx;
-	color: #ccc;
+.picker-text.placeholder {
+	color: #a0aec0;
+}
+
+.picker-arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28rpx;
+	height: 28rpx;
+	background: rgba(66, 153, 225, 0.1);
+	border-radius: 50%;
+	border: 1rpx solid rgba(66, 153, 225, 0.2);
+}
+
+.arrow-icon {
+	font-size: 16rpx;
+	color: #4299e1;
+	font-weight: 600;
+}
+
+/* ==================== 输入框样式 ==================== */
+.input-wrapper,
+.textarea-wrapper {
+	background: #f7fafc;
+	border-radius: 16rpx;
+	border: 2rpx solid transparent;
+	transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within,
+.textarea-wrapper:focus-within {
+	border-color: #4299e1;
+	background: #ebf8ff;
+	box-shadow: 0 0 0 4rpx rgba(66, 153, 225, 0.1);
 }
 
 .input {
 	width: 100%;
-	padding: 20rpx 0;
+	padding: 24rpx 20rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: #2d3748;
 	border: none;
 	outline: none;
+	background: transparent;
+	font-weight: 500;
 }
 
 .textarea {
 	width: 100%;
 	min-height: 120rpx;
-	padding: 20rpx 0;
+	padding: 24rpx 20rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: #2d3748;
 	border: none;
 	outline: none;
+	background: transparent;
 	resize: none;
+	font-weight: 500;
+	line-height: 1.5;
 }
 
+/* ==================== 提交按钮 ==================== */
 .submit-section {
 	position: fixed;
 	bottom: 0;
 	left: 0;
 	right: 0;
+	z-index: 100;
+}
+
+.submit-wrapper {
 	padding: 30rpx 40rpx;
-	background-color: #fff;
-	border-top: 1rpx solid #f0f0f0;
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(20rpx);
+	border-top: 1rpx solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .submit-btn {
+	position: relative;
 	width: 100%;
 	height: 88rpx;
-	background-color: #3cc51f;
-	color: #fff;
+	background: #cbd5e0;
 	border: none;
 	border-radius: 44rpx;
 	font-size: 32rpx;
-	font-weight: 500;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	overflow: hidden;
 }
 
-.submit-btn:disabled {
-	background-color: #ccc;
+.submit-btn.active {
+	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+	box-shadow: 0 8rpx 32rpx rgba(66, 153, 225, 0.4);
+}
+
+.submit-btn:active.active {
+	transform: translateY(2rpx);
+	box-shadow: 0 4rpx 16rpx rgba(66, 153, 225, 0.6);
+}
+
+.submit-text {
+	color: #a0aec0;
+	position: relative;
+	z-index: 2;
+}
+
+.submit-btn.active .submit-text {
+	color: #ffffff;
+}
+
+.submit-glow {
+	position: absolute;
+	inset: -4rpx;
+	background: linear-gradient(135deg, #4299e1, #3182ce);
+	border-radius: 48rpx;
+	opacity: 0.3;
+	filter: blur(8rpx);
+	z-index: 1;
+}
+
+/* ==================== 底部渐变 ==================== */
+.bottom-fade {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 40rpx;
+	background: linear-gradient(180deg, transparent 0%, rgba(245, 243, 240, 0.8) 100%);
+	pointer-events: none;
 }
 </style>
