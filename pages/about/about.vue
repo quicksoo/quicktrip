@@ -65,7 +65,7 @@
 		
 		<!-- 底部版本信息 -->
 		<view class="footer">
-			<view class="version-container">
+			<view class="version-container" @tap="onVersionClick">
 				<text class="version">版本 1.0.0</text>
 			</view>
 		</view>
@@ -79,13 +79,44 @@
 export default {
 	data() {
 		return {
-			
+			clickCount: 0,
+			clickTimer: null
 		}
 	},
 	methods: {
 		goToFeedback() {
 			uni.navigateTo({
 				url: '/pages/feedback/feedback'
+			})
+		},
+		
+		async onVersionClick() {
+			this.clickCount++
+			
+			// 清除之前的定时器
+			if (this.clickTimer) {
+				clearTimeout(this.clickTimer)
+			}
+			
+			// 设置3秒后重置计数
+			this.clickTimer = setTimeout(() => {
+				this.clickCount = 0
+			}, 3000)
+			
+			// 连续点击10次触发管理入口
+			if (this.clickCount === 10) {
+				this.clickCount = 0
+				await this.checkAdminAccess()
+			}
+		},
+		
+		async checkAdminAccess() {
+			// TODO: 后续添加openId验证逻辑
+			const ADMIN_OPENID = 'your_openid_here'
+			
+			// 临时直接进入管理页面
+			uni.navigateTo({
+				url: '/pages/admin/admin'
 			})
 		}
 	}

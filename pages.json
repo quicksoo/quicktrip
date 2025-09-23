@@ -27,6 +27,13 @@
 				"navigationStyle": "custom",
 				"backgroundColor": "#f5f5f5"
 			}
+		},
+		{
+			"path": "pages/admin/admin",
+			"style": {
+				"navigationStyle": "custom",
+				"backgroundColor": "#f5f5f5"
+			}
 		}
 	],
 	"globalStyle": {

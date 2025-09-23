@@ -66,11 +66,62 @@
 			</view>
 		</view>
 
-		<!-- 二维码模态框 -->
+		<!-- 预约引导模态框 -->
 		<view v-if="showQrModal" class="modal-mask" @tap="closeQrCode">
 			<view class="modal-body" @tap.stop>
-				<canvas canvas-id="qrcode" style="width: 200px; height: 200px;"></canvas>
-				<button class="close-btn" @tap="closeQrCode">关闭</button>
+				<view class="close-btn" @tap="closeQrCode">
+					<text class="close-icon">✕</text>
+				</view>
+				
+				<!-- 标题 -->
+				<view class="modal-title">
+					<text class="title-text">预约方式</text>
+				</view>
+				
+				<!-- 主要操作 -->
+				<view class="main-action">
+					<button class="copy-btn" @tap="copyUrl">
+						<text class="copy-icon">📋</text>
+						<text class="copy-text">复制预约链接</text>
+					</button>
+				</view>
+				
+				<!-- 搜索框引导动画 -->
+				<view class="guide-animation">
+					<view class="wechat-guide-demo">
+						<view class="phone-mockup">
+							<view class="status-bar">
+								<text class="time">14:02</text>
+								<view class="signal-area">
+									<text class="signal">5G</text>
+									<text class="battery">67%</text>
+								</view>
+							</view>
+							<view class="wechat-header">
+								<text class="wechat-title">微信</text>
+								<view class="header-icons">
+									<view class="search-icon-btn">🔍</view>
+								</view>
+							</view>
+							<view class="search-highlight">
+								<view class="arrow-point">👆</view>
+								<text class="guide-tip">点击这里，粘贴预约链接</text>
+							</view>
+						</view>
+					</view>
+				</view>
+				
+				<!-- 分割线 -->
+				<view class="divider" v-if="currentScenic && currentScenic.wechatAccount">
+					<text class="divider-text">或</text>
+				</view>
+				
+				<!-- 公众号引导 -->
+				<view class="wechat-guide" v-if="currentScenic && currentScenic.wechatAccount">
+					<text class="guide-text">关注公众号</text>
+					<text class="account-name">「{{currentScenic.wechatAccount}}」</text>
+					<text class="guide-desc">获取更多预约服务</text>
+				</view>
 			</view>
 		</view>
 
@@ -99,8 +150,9 @@ export default {
 			],
 			scenicSpots: [],
 			loading: false,
-			showQrModal: false,   // 控制二维码模态框
-			currentQrUrl: '',    // 保存当前二维码链接
+			showQrModal: false,   // 控制预约引导模态框
+			currentQrUrl: '',    // 保存当前预约链接
+			currentScenic: null, // 保存当前景点信息
 		}
 	},
 	computed: {
@@ -178,18 +230,11 @@ export default {
 				return
 			}
 
-			// 次选：展示二维码
+			// 次选：展示预约引导
 			if (bookUrl) {
 				this.currentQrUrl = bookUrl
+				this.currentScenic = scenic // 保存当前景点信息
 				this.showQrModal = true
-				this.$nextTick(() => {
-					drawQrcode({
-						width: 200,
-						height: 200,
-						canvasId: 'qrcode',
-						text: bookUrl
-					})
-				})
 				return
 			}
 
@@ -199,6 +244,49 @@ export default {
 
 		closeQrCode() {
 			this.showQrModal = false
+			this.currentScenic = null
+		},
+
+		// 复制链接到剪贴板
+		copyUrl() {
+			// #ifdef MP-WEIXIN
+			wx.setClipboardData({
+				data: this.currentQrUrl,
+				success: () => {
+					uni.showToast({
+						title: '链接已复制，请到微信搜索框粘贴',
+						icon: 'success',
+						duration: 3000
+					})
+					// 2秒后自动关闭弹窗
+					setTimeout(() => {
+						this.closeQrCode()
+					}, 2000)
+				},
+				fail: () => {
+					uni.showToast({
+						title: '复制失败',
+						icon: 'none'
+					})
+				}
+			})
+			// #endif
+			
+			// #ifndef MP-WEIXIN
+			uni.setClipboardData({
+				data: this.currentQrUrl,
+				success: () => {
+					uni.showToast({
+						title: '链接已复制，请到微信搜索框粘贴',
+						icon: 'success',
+						duration: 3000
+					})
+					setTimeout(() => {
+						this.closeQrCode()
+					}, 2000)
+				}
+			})
+			// #endif
 		}
 	}
 }
@@ -220,14 +308,261 @@ export default {
 }
 .modal-body {
 	background: #fff;
-	padding: 40rpx;
-	border-radius: 20rpx;
+	padding: 30px 20px 25px;
+	border-radius: 16px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	position: relative;
+	width: 320px;
+	box-sizing: border-box;
 }
+
 .close-btn {
-	margin-top: 20rpx;
+	position: absolute;
+	top: 15px;
+	right: 15px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	z-index: 10;
+}
+
+.close-btn:active {
+	transform: scale(0.95);
+	background: rgba(0, 0, 0, 0.2);
+}
+
+.close-icon {
+	font-size: 18px;
+	color: #666;
+	font-weight: bold;
+	line-height: 1;
+}
+
+/* 新的预约引导样式 */
+.modal-title {
+	margin-bottom: 25px;
+}
+
+.title-text {
+	font-size: 20px;
+	font-weight: 600;
+	color: #333;
+}
+
+.main-action {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.copy-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	background: #07c160;
+	color: white;
+	border: none;
+	border-radius: 20px;
+	padding: 10px 20px;
+	font-size: 15px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.copy-btn:active {
+	background: #06ad56;
+	transform: scale(0.95);
+}
+
+.copy-icon {
+	font-size: 15px;
+}
+
+.copy-text {
+	font-size: 15px;
+}
+
+.guide-animation {
+	margin: 15px 0;
+	animation: fadeIn 0.3s ease-in;
+}
+
+.wechat-guide-demo {
+	display: flex;
+	justify-content: center;
+}
+
+.phone-mockup {
+	width: 250px;
+	background: #f7f7f7;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 2px solid #e0e0e0;
+	position: relative;
+}
+
+.status-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 15px 5px;
+	background: #f7f7f7;
+	font-size: 11px;
+	color: #333;
+}
+
+.time {
+	font-weight: 600;
+}
+
+.signal-area {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.signal, .battery {
+	font-size: 10px;
+	color: #333;
+}
+
+.wechat-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 15px;
+	background: #ededed;
+	border-bottom: 1px solid #d0d0d0;
+}
+
+.wechat-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #333;
+}
+
+.header-icons {
+	display: flex;
+	gap: 15px;
+}
+
+.search-icon-btn, .add-icon-btn {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	color: #333;
+	border-radius: 50%;
+	background: rgba(7, 193, 96, 0.1);
+	animation: pulse 2s infinite;
+}
+
+.search-highlight {
+	padding: 15px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	background: #fff;
+}
+
+.arrow-point {
+	font-size: 20px;
+	animation: bounce 1.5s infinite;
+}
+
+.guide-tip {
+	font-size: 12px;
+	color: #07c160;
+	font-weight: 500;
+	text-align: center;
+	line-height: 1.2;
+}
+
+@keyframes pulse {
+	0% { 
+		background: rgba(7, 193, 96, 0.1);
+		transform: scale(1);
+	}
+	50% { 
+		background: rgba(7, 193, 96, 0.3);
+		transform: scale(1.1);
+	}
+	100% { 
+		background: rgba(7, 193, 96, 0.1);
+		transform: scale(1);
+	}
+}
+
+.divider {
+	margin: 20px 0 15px;
+	position: relative;
+	width: 100%;
+	text-align: center;
+}
+
+.divider::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: #e0e0e0;
+}
+
+.divider-text {
+	background: #fff;
+	padding: 0 15px;
+	font-size: 14px;
+	color: #999;
+}
+
+.wechat-guide {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+}
+
+.guide-text {
+	font-size: 14px;
+	color: #666;
+}
+
+.account-name {
+	font-size: 16px;
+	font-weight: 600;
+	color: #07c160;
+}
+
+.guide-desc {
+	font-size: 12px;
+	color: #999;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(-10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+	0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+	40% { transform: translateY(-8px); }
+	60% { transform: translateY(-4px); }
 }
 
 /* 其他样式保持你的原样 */
