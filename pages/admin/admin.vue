@@ -6,14 +6,18 @@
 			<button class="back-btn" @tap="goBack">返回</button>
 		</view>
 
-		<!-- 添加按钮 -->
-		<view class="add-section">
+		<!-- 城市选择和添加按钮 -->
+		<view class="control-section">
+			<view class="city-selector" @tap="goToCitySelect">
+				<text class="city-name">{{currentCity.name}}</text>
+				<text class="city-arrow">▼</text>
+			</view>
 			<button class="add-btn" @tap="showAddModal">+ 添加景点</button>
 		</view>
 
 		<!-- 景点列表 -->
 		<view class="list-section">
-			<view class="spot-item" v-for="item in scenicSpots" :key="item._id">
+			<view class="spot-item" v-for="item in filteredScenicSpots" :key="item._id">
 				<view class="spot-info">
 					<text class="spot-name">{{item.name}}</text>
 					<view class="price-city">
@@ -29,60 +33,64 @@
 				</view>
 			</view>
 
-			<view v-if="!scenicSpots.length" class="empty-list">暂无景点，请先添加</view>
+			<view v-if="!filteredScenicSpots.length" class="empty-list">
+				<text v-if="!scenicSpots.length">📌 暂无景点，请先添加</text>
+				<text v-else>📍 {{currentCity.name}}暂无景点数据</text>
+			</view>
 		</view>
 
-		<!-- 简单模态框 -->
-		<view v-if="showModal" class="modal-overlay" @tap="closeModal">
-			<view class="modal-content" @tap.stop>
-				<view class="modal-header">
-					<text>{{isEdit ? '编辑景点' : '添加景点'}}</text>
+		<!-- 底部弹框 -->
+		<view v-if="showModal" class="bottom-sheet-overlay" @tap="handleOverlayClick">
+			<view class="bottom-sheet" :class="{ 'show': showModal }" @tap.stop>
+				<!-- 拖拽指示器 -->
+				<view class="drag-indicator"></view>
+				
+				<view class="sheet-header">
+					<text class="sheet-title">{{isEdit ? '编辑景点' : '添加景点'}}</text>
 					<button @tap="closeModal" class="close-btn">×</button>
 				</view>
 				
-				<view class="form">
-					<view class="field">
-						<text class="label">景点名称 *</text>
-						<input v-model="formData.name" placeholder="请输入景点名称" class="input" />
+				<scroll-view class="sheet-content" scroll-y="true" enhanced="true" show-scrollbar="false">
+					<view class="form">
+						<view class="field">
+							<text class="label">景点名称 *</text>
+							<input v-model="formData.name" placeholder="请输入景点名称" class="input" />
+						</view>
+						
+
+						
+						<view class="field">
+							<text class="label">预约时间</text>
+							<input v-model="formData.reservationTime" placeholder="如：提前7天预约" class="input" />
+						</view>
+						
+						<view class="field">
+							<text class="label">门票价格</text>
+							<input v-model="formData.price" type="number" min="0" step="0.01" placeholder="0表示免费" class="input" />
+						</view>
+						
+						<view class="field">
+							<text class="label">预约链接 *</text>
+							<textarea v-model="formData.bookUrl" placeholder="请输入完整的预约链接（需以 http 开头）" class="textarea"></textarea>
+						</view>
+						
+						<view class="field">
+							<text class="label">小程序链接</text>
+							<textarea v-model="formData.shortLink" placeholder="可选" class="textarea"></textarea>
+						</view>
+						
+						<view class="field">
+							<text class="label">公众号名称</text>
+							<input v-model="formData.wechatAccount" placeholder="可选" class="input" />
+						</view>
+						
+						<!-- 按钮区域 -->
+						<view class="form-buttons">
+							<button class="cancel-btn" :disabled="saving" @tap="closeModal">取消</button>
+							<button class="confirm-btn" :disabled="saving" @tap="saveSpot">{{ saving ? '保存中...' : (isEdit ? '更新' : '添加') }}</button>
+						</view>
 					</view>
-					
-					<view class="field">
-						<text class="label">所属城市 *</text>
-						<picker @change="onCityChange" :value="cityIndex" :range="cityOptions" range-key="name">
-							<view class="picker">{{ cityOptions[cityIndex] ? cityOptions[cityIndex].name + ' ▼' : '选择城市 ▼' }}</view>
-						</picker>
-					</view>
-					
-					<view class="field">
-						<text class="label">预约时间</text>
-						<input v-model="formData.reservationTime" placeholder="如：提前7天预约" class="input" />
-					</view>
-					
-					<view class="field">
-						<text class="label">门票价格</text>
-						<input v-model="formData.price" type="number" placeholder="0表示免费" class="input" />
-					</view>
-					
-					<view class="field">
-						<text class="label">预约链接 *</text>
-						<textarea v-model="formData.bookUrl" placeholder="请输入完整的预约链接" class="textarea"></textarea>
-					</view>
-					
-					<view class="field">
-						<text class="label">小程序链接</text>
-						<textarea v-model="formData.shortLink" placeholder="可选" class="textarea"></textarea>
-					</view>
-					
-					<view class="field">
-						<text class="label">公众号名称</text>
-						<input v-model="formData.wechatAccount" placeholder="可选" class="input" />
-					</view>
-				</view>
-				
-				<view class="modal-footer">
-					<button class="cancel-btn" :disabled="saving" @tap="closeModal">取消</button>
-					<button class="confirm-btn" :disabled="saving" @tap="saveSpot">{{ saving ? '保存中...' : (isEdit ? '更新' : '添加') }}</button>
-				</view>
+				</scroll-view>
 			</view>
 		</view>
 	</view>
@@ -97,6 +105,7 @@ export default {
 			isEdit: false,
 			currentEditId: '',
 			cityIndex: 0,
+			selectedCityIndex: 0, // 当前选择的城市索引
 			loading: false,
 			saving: false,
 			cityOptions: [
@@ -120,10 +129,73 @@ export default {
 			}
 		}
 	},
+	computed: {
+		currentCity() {
+			return this.cityOptions[this.selectedCityIndex] || this.cityOptions[0]
+		},
+		filteredScenicSpots() {
+			return this.scenicSpots
+		}
+	},
 	onLoad() {
-		this.loadScenicSpots()
+		this.initPage()
+	},
+	onShow() {
+		// 从城市选择页面返回时更新城市
+		this.checkCityUpdate()
 	},
 	methods: {
+		async initPage() {
+			try {
+				const lastCity = uni.getStorageSync('last_selected_city')
+				if (lastCity) {
+					const cityData = JSON.parse(lastCity)
+					const index = this.cityOptions.findIndex(city => city.code === cityData.code)
+					if (index !== -1) this.selectedCityIndex = index
+				}
+			} catch (e) {
+				console.log('获取上次选择城市失败:', e)
+			}
+			await this.loadScenicSpots()
+		},
+
+		checkCityUpdate() {
+			try {
+				const lastCity = uni.getStorageSync('last_selected_city')
+				if (lastCity) {
+					const cityData = JSON.parse(lastCity)
+					const index = this.cityOptions.findIndex(city => city.code === cityData.code)
+					if (index !== -1 && index !== this.selectedCityIndex) {
+						this.selectedCityIndex = index
+					}
+				}
+			} catch (e) {
+				console.log('检查城市更新失败:', e)
+			}
+		},
+
+		goToCitySelect() {
+			uni.navigateTo({
+				url: `/pages/city/city?current=${this.currentCity.code}`
+			})
+		},
+
+		// 城市选择回调方法
+		onCitySelected(city) {
+			const index = this.cityOptions.findIndex(c => c.code === city.code)
+			if (index !== -1) {
+				this.selectedCityIndex = index
+				// 保存选择的城市到本地存储
+				try {
+					uni.setStorageSync('last_selected_city', JSON.stringify(city))
+				} catch (e) {
+					console.log('保存城市选择失败:', e)
+				}
+				// 重新加载当前城市的数据
+				this.loadScenicSpots()
+			}
+		},
+
 		goBack() {
 			uni.navigateBack()
 		},
@@ -133,7 +205,12 @@ export default {
 			this.loading = true
 			try {
 				const db = wx.cloud.database()
-				const res = await db.collection('scenic_spots').orderBy('createdAt', 'desc').get()
+				const res = await db.collection('scenic_spots')
+					.where({
+						city: this.currentCity.code
+					})
+					.orderBy('createdAt', 'desc')
+					.get()
 				this.scenicSpots = res.data || []
 			} catch (error) {
 				console.error('加载失败:', error)
@@ -152,15 +229,17 @@ export default {
 			this.isEdit = false
 			this.currentEditId = ''
 			this.resetForm()
+			// 设置城市为当前选择的城市
+			this.formData.city = this.currentCity.code
 			this.showModal = true
-			// 防止页面滚动
-			document.body.style.overflow = 'hidden'
+			// 阻止页面滚动
+			this.disablePageScroll()
 		},
 
 		editSpot(spot) {
 			this.isEdit = true
 			this.currentEditId = spot._id || ''
-			// 只回填你表单里的字段，避免把 _id 等也放入 formData
+			// 只回填表单字段
 			this.formData = {
 				name: spot.name || '',
 				city: spot.city || 'beijing',
@@ -171,10 +250,16 @@ export default {
 				wechatAccount: spot.wechatAccount || ''
 			}
 			const idx = this.cityOptions.findIndex(c => c.code === this.formData.city)
-			this.cityIndex = idx >= 0 ? idx : 0
+			if (idx < 0) {
+				console.warn('城市 code 未找到:', this.formData.city)
+				this.cityIndex = 0
+				this.formData.city = 'beijing'
+			} else {
+				this.cityIndex = idx
+			}
 			this.showModal = true
-			// 防止页面滚动
-			document.body.style.overflow = 'hidden'
+			// 阻止页面滚动
+			this.disablePageScroll()
 		},
 
 		async deleteSpot(spot) {
@@ -204,31 +289,53 @@ export default {
 			this.showModal = false
 			this.resetForm()
 			// 恢复页面滚动
+			this.enablePageScroll()
+		},
+
+		// 禁用页面滚动
+		disablePageScroll() {
+			// #ifdef H5
+			document.body.style.overflow = 'hidden'
+			// #endif
+			// #ifdef APP-PLUS || MP-WEIXIN
+			uni.pageScrollTo({
+				scrollTop: 0,
+				duration: 0
+			})
+			// #endif
+		},
+
+		// 启用页面滚动
+		enablePageScroll() {
+			// #ifdef H5
 			document.body.style.overflow = 'auto'
+			// #endif
 		},
 
 		resetForm() {
 			this.formData = {
 				name: '',
-				city: 'beijing',
+				city: this.currentCity.code,
 				reservationTime: '',
 				price: 0,
 				bookUrl: '',
 				shortLink: '',
 				wechatAccount: ''
 			}
-			this.cityIndex = 0
 		},
 
-		onCityChange(e) {
-			this.cityIndex = e.detail.value
-			this.formData.city = this.cityOptions[this.cityIndex].code
+		handleOverlayClick(e) {
+			// 点击遮罩层才关闭，且不在保存中
+			if (e.target.classList.contains('bottom-sheet-overlay') && !this.saving) {
+				this.closeModal()
+			}
 		},
 
 		// 保存（添加/更新）
 		async saveSpot() {
 			if (this.saving) return
-			// 基本校验（保留你字段的要求）
+
+			// 校验
 			if (!this.formData.name.trim()) {
 				uni.showToast({ title: '请输入景点名称', icon: 'none' })
 				return
@@ -237,13 +344,17 @@ export default {
 				uni.showToast({ title: '请输入预约链接', icon: 'none' })
 				return
 			}
+			if (!this.formData.bookUrl.trim().startsWith('http://') && !this.formData.bookUrl.trim().startsWith('https://')) {
+				uni.showToast({ title: '预约链接需以 http:// 或 https:// 开头', icon: 'none' })
+				return
+			}
 
 			this.saving = true
 			try {
 				uni.showLoading({ title: this.isEdit ? '更新中' : '添加中' })
 				const db = wx.cloud.database()
 
-				// 构造要保存的对象（只包含表单字段）
+				// 构造要保存的对象
 				const payload = {
 					name: String(this.formData.name).trim(),
 					city: this.formData.city || 'beijing',
@@ -255,12 +366,16 @@ export default {
 					updatedAt: Date.now()
 				}
 
+				// 价格非负校验
+				if (isNaN(payload.price) || payload.price < 0) {
+					uni.showToast({ title: '价格不能为负数', icon: 'none' })
+					return
+				}
+
 				if (this.isEdit && this.currentEditId) {
-					// 更新：注意 uniCloud/wx cloud update 接口期望 { data: {...} }
 					await db.collection('scenic_spots').doc(this.currentEditId).update({ data: payload })
 					uni.showToast({ title: '更新成功' })
 				} else {
-					// 添加：带上 createdAt
 					payload.createdAt = Date.now()
 					await db.collection('scenic_spots').add({ data: payload })
 					uni.showToast({ title: '添加成功' })
@@ -285,7 +400,7 @@ export default {
 	padding: 20rpx;
 	min-height: 100vh;
 	background: #f5f5f5;
-	position: relative; /* 确保容器相对定位 */
+	position: relative;
 }
 
 /* header */
@@ -315,22 +430,63 @@ export default {
 	font-size: 28rpx;
 }
 
-/* add */
-.add-section {
+/* 控制区域 */
+.control-section {
 	margin-bottom: 20rpx;
+	display: flex;
+	gap: 16rpx;
+	align-items: stretch;
+}
+
+.city-selector {
+	display: flex;
+	align-items: center;
+	padding: 0 24rpx;
+	height: 88rpx;
+	background: linear-gradient(90deg, #6a5acd, #8e44ad);
+	border-radius: 16rpx;
+	box-shadow: 0 4rpx 12rpx rgba(106, 90, 205, 0.15);
+	flex: 1;
+	min-width: 0;
+}
+
+.city-name {
+	color: white;
+	font-size: 30rpx;
+	font-weight: 600;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.city-arrow {
+	color: white;
+	font-size: 24rpx;
+	margin-left: 12rpx;
+	opacity: 0.8;
 }
 
 .add-btn {
 	background: linear-gradient(90deg, #6a5acd, #8e44ad);
 	color: white;
 	border: none;
-	padding: 20rpx;
-	border-radius: 10rpx;
-	width: 100%;
-	font-size: 32rpx;
-	box-shadow: 0 6rpx 18rpx rgba(11,176,111,0.12);
-	font-weight: bold;
-	text-align: center;
+	padding: 0 32rpx;
+	height: 88rpx;
+	border-radius: 16rpx;
+	font-size: 30rpx;
+	box-shadow: 0 4rpx 12rpx rgba(106, 90, 205, 0.15);
+	font-weight: 600;
+	white-space: nowrap;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.add-btn:active {
+	transform: scale(0.98);
+	box-shadow: 0 2rpx 8rpx rgba(106, 90, 205, 0.2);
 }
 
 /* list */
@@ -425,204 +581,257 @@ export default {
 }
 
 .empty-list {
-	padding: 40rpx 0;
+	padding: 80rpx 0;
 	text-align: center;
 	color: #999;
-	font-size: 26rpx;
+	font-size: 28rpx;
+	background: #fafafa;
+	border-radius: 10rpx;
+	margin-top: 20rpx;
 }
 
-/* modal */
-.modal-overlay {
+/* 底部弹框 */
+.bottom-sheet-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
 	background: rgba(0,0,0,0.5);
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	z-index: 9999; /* 确保在最上层 */
+	z-index: 9999;
+	opacity: 0;
+	animation: overlayFadeIn 0.3s ease-out forwards;
 }
 
-.modal-content {
-	background: white;
-	width: 90%;
-	max-width: 600rpx;
-	max-height: 80vh;
-	border-radius: 16rpx;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.3);
-	position: relative;
-	animation: modalFadeIn 0.3s ease-out;
-}
-
-@keyframes modalFadeIn {
-	from {
-		opacity: 0;
-		transform: scale(0.9);
-	}
+@keyframes overlayFadeIn {
 	to {
 		opacity: 1;
-		transform: scale(1);
 	}
 }
 
-.modal-header {
+.bottom-sheet {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: white;
+	border-radius: 24rpx 24rpx 0 0;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 -10rpx 30rpx rgba(0,0,0,0.2);
+	transform: translateY(100%);
+	transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	overflow: hidden;
+}
+
+.bottom-sheet.show {
+	transform: translateY(0);
+}
+
+.drag-indicator {
+	width: 80rpx;
+	height: 8rpx;
+	background: #d0d0d0;
+	border-radius: 4rpx;
+	margin: 20rpx auto 16rpx;
+	flex-shrink: 0;
+}
+
+.sheet-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #eee;
-	font-size: 32rpx;
-	font-weight: bold;
+	padding: 32rpx 30rpx 24rpx;
+	border-bottom: 2rpx solid #f0f0f0;
+	flex-shrink: 0;
+	background: #fff;
+}
+
+.sheet-title {
+	font-size: 36rpx;
+	font-weight: 700;
 	color: #333;
-	background: #f8f9fa;
 }
 
 .close-btn {
-	background: none;
+	background: #f5f5f5;
 	border: none;
-	font-size: 40rpx;
-	color: #999;
+	font-size: 32rpx;
+	color: #666;
 	padding: 0;
-	width: 40rpx;
-	height: 40rpx;
+	width: 56rpx;
+	height: 56rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	border-radius: 50%;
+	transition: all 0.3s ease;
 }
 
+/* #ifdef H5 */
 .close-btn:hover {
 	color: #333;
-	background: #f0f0f0;
+	background: #e8e8e8;
+}
+/* #endif */
+
+.sheet-content {
+	flex: 1;
+	min-height: 0;
+	max-height: calc(80vh - 200rpx);
 }
 
 .form {
-	flex: 1;
-	padding: 30rpx;
-	overflow-y: auto;
+	padding: 30rpx 30rpx 40rpx;
 }
 
 .field {
-	margin-bottom: 30rpx;
+	margin-bottom: 32rpx;
+}
+
+.field:last-child {
+	margin-bottom: 0;
 }
 
 .label {
 	display: block;
-	margin-bottom: 12rpx;
-	font-size: 28rpx;
+	margin-bottom: 16rpx;
+	font-size: 30rpx;
 	color: #333;
-	font-weight: 500;
+	font-weight: 600;
 }
 
 .input, .textarea {
 	width: 100%;
-	padding: 20rpx;
-	border: 1rpx solid #ddd;
-	border-radius: 12rpx;
-	font-size: 28rpx;
+	height: 88rpx;
+	padding: 0 24rpx;
+	border: 2rpx solid #e5e5e5;
+	border-radius: 16rpx;
+	font-size: 30rpx;
 	box-sizing: border-box;
-	background: #fafafa;
+	background: #fff;
 	color: #333;
+	line-height: 88rpx;
+	transition: all 0.3s ease;
 }
 
 .input:focus, .textarea:focus {
 	border-color: #6a5acd;
 	outline: none;
 	background: #fff;
-	box-shadow: 0 0 0 2rpx rgba(106, 90, 205, 0.2);
+	box-shadow: 0 0 0 4rpx rgba(106, 90, 205, 0.1);
 }
 
 .textarea {
-	height: 120rpx;
+	height: 140rpx;
+	line-height: 1.5;
+	padding: 24rpx;
 	resize: none;
 }
 
 .picker {
-	padding: 20rpx;
-	border: 1rpx solid #ddd;
-	border-radius: 12rpx;
-	font-size: 28rpx;
-	background: #fafafa;
+	width: 100%;
+	height: 88rpx;
+	padding: 0 24rpx;
+	border: 2rpx solid #e5e5e5;
+	border-radius: 16rpx;
+	font-size: 30rpx;
+	background: #fff;
 	color: #333;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	box-sizing: border-box;
+	transition: all 0.3s ease;
 }
 
-.picker:after {
-	content: '▼';
-	margin-left: 10rpx;
-	color: #999;
-	font-size: 24rpx;
+.picker:active {
+	border-color: #6a5acd;
+	background: #f8f9ff;
 }
 
-.modal-footer {
+.form-buttons {
 	display: flex;
-	gap: 20rpx;
-	padding: 30rpx;
-	border-top: 1rpx solid #eee;
-	background: #fafafa;
+	gap: 24rpx;
+	margin-top: 48rpx;
+	padding-top: 32rpx;
+	border-top: 2rpx solid #f0f0f0;
 }
 
 .cancel-btn, .confirm-btn {
 	flex: 1;
-	padding: 20rpx;
+	height: 88rpx;
 	border: none;
-	border-radius: 12rpx;
-	font-size: 28rpx;
-	font-weight: bold;
+	border-radius: 16rpx;
+	font-size: 32rpx;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .cancel-btn {
-	background: #6c757d;
-	color: white;
+	background: #f5f5f5;
+	color: #666;
+	border: 2rpx solid #e5e5e5;
+}
+
+.cancel-btn:active {
+	background: #e8e8e8;
 }
 
 .confirm-btn {
-	background: #6a5acd;
+	background: linear-gradient(135deg, #6a5acd, #8e44ad);
 	color: white;
+	box-shadow: 0 4rpx 12rpx rgba(106, 90, 205, 0.3);
+}
+
+.confirm-btn:active {
+	transform: translateY(1rpx);
+	box-shadow: 0 2rpx 8rpx rgba(106, 90, 205, 0.3);
 }
 
 .cancel-btn:disabled, .confirm-btn:disabled {
-	opacity: 0.6;
+	opacity: 0.5;
+	transform: none;
 }
 
 /* 滚动条样式 */
-.form::-webkit-scrollbar {
+.sheet-content::-webkit-scrollbar {
 	width: 8rpx;
 }
 
-.form::-webkit-scrollbar-thumb {
+.sheet-content::-webkit-scrollbar-thumb {
 	background: #ddd;
 	border-radius: 4rpx;
 }
 
-.form::-webkit-scrollbar-track {
+.sheet-content::-webkit-scrollbar-track {
 	background: #f5f5f5;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-	.modal-content {
-		width: 95%;
-		margin: 20rpx;
+	.bottom-sheet {
+		max-height: 90vh;
 	}
 	
 	.form {
 		padding: 20rpx;
+		padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
 	}
 	
-	.modal-header {
-		padding: 20rpx;
+	.sheet-header {
+		padding: 15rpx 20rpx;
 	}
-	
-	.modal-footer {
-		padding: 20rpx;
+}
+
+/* 键盘弹起时的适配 */
+@media (max-height: 600px) {
+	.bottom-sheet {
+		max-height: 95vh;
 	}
 }
 </style>

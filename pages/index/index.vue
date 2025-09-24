@@ -161,15 +161,14 @@ export default {
 		},
 		filteredScenicSpots() {
 			const dataSource = this.scenicSpots.length > 0 ? this.scenicSpots : []
-			let spots = dataSource.filter(spot => spot.city === this.currentCity.code)
-
+			
 			if (this.searchKeyword.trim()) {
-				spots = spots.filter(spot =>
+				return dataSource.filter(spot =>
 					spot.name.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
-					spot.address.toLowerCase().includes(this.searchKeyword.toLowerCase())
+					(spot.address && spot.address.toLowerCase().includes(this.searchKeyword.toLowerCase()))
 				)
 			}
-			return spots
+			return dataSource
 		}
 	},
 	onLoad() {
@@ -194,7 +193,12 @@ export default {
 			this.loading = true
 			try {
 				const db = wx.cloud.database()
-				const res = await db.collection('scenic_spots').get()
+				const res = await db.collection('scenic_spots')
+					.where({
+						city: this.currentCity.code
+					})
+					.orderBy('createdAt', 'desc')
+					.get()
 				this.scenicSpots = res.data || []
 			} catch (error) {
 				console.error('加载云数据库失败:', error)
@@ -208,6 +212,22 @@ export default {
 			uni.navigateTo({
 				url: `/pages/city/city?current=${this.currentCity.code}`
 			})
+		},
+
+		// 城市选择回调方法
+		onCitySelected(city) {
+			const index = this.cityList.findIndex(c => c.code === city.code)
+			if (index !== -1) {
+				this.cityIndex = index
+				// 保存选择的城市到本地存储
+				try {
+					uni.setStorageSync('last_selected_city', JSON.stringify(city))
+				} catch (e) {
+					console.log('保存城市选择失败:', e)
+				}
+				// 重新加载当前城市的数据
+				this.loadScenicSpots()
+			}
 		},
 
 		async jumpToAnotherMiniProgram(scenic) {
