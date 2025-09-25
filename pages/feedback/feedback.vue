@@ -66,7 +66,7 @@
 			<view class="form-card">
 				<view class="card-bg-pattern"></view>
 				<view class="form-header">
-					<view class="form-icon">🏛️</view>
+					<view class="form-icon">🏙️</view>
 					<text class="form-section-title">景点信息</text>
 				</view>
 				
@@ -258,38 +258,45 @@ export default {
 	min-height: 100vh;
 	background: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
 	position: relative;
-	padding-bottom: 140rpx;
+	padding-bottom: 120rpx;
 }
 
 /* ==================== 头部区域 ==================== */
 .header-section {
 	position: relative;
-	padding-bottom: 40rpx;
+	padding-bottom: 60rpx;
 }
 
+/* 背景色区域（底层橙色）*/
 .header-bg {
 	position: absolute;
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 280rpx;
+	height: 300rpx; /* 提高高度以容纳内容 */
 	background: linear-gradient(135deg, #f6d55c 0%, #ed8936 100%);
-	border-radius: 0 0 50rpx 50rpx;
-	box-shadow: 0 10rpx 40rpx rgba(237, 137, 54, 0.3);
+	border-radius: 0 0 38rpx 38rpx;
+	box-shadow: 0 10rpx 40rpx rgba(237, 137, 54, 0.22);
+	z-index: 1;
 }
 
+/* 内容放在背景之上 */
 .header-content {
 	position: relative;
 	z-index: 2;
-	padding-top: env(safe-area-inset-top);
+	/* 将 padding-top 调整为合适的高度，避免把内容压在背景之外 */
+	padding-top: calc(40rpx + env(safe-area-inset-top));
+	padding-left: 24rpx;
+	padding-right: 24rpx;
 }
 
+/* 顶部导航 */
 .nav-bar {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	height: 88rpx;
-	padding: 0 30rpx;
+	/* 使用与 header-content 一致的内边距，不要重复大幅偏移 */
 }
 
 .nav-left,
@@ -305,17 +312,18 @@ export default {
 	flex: 1;
 }
 
+/* 返回按钮 */
 .back-button {
 	width: 48rpx;
 	height: 48rpx;
-	background: rgba(255, 255, 255, 0.25);
-	backdrop-filter: blur(20rpx);
-	border: 1rpx solid rgba(255, 255, 255, 0.3);
+	background: rgba(255, 255, 255, 0.12);
+	backdrop-filter: blur(10rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.18);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
 .back-icon {
@@ -324,51 +332,59 @@ export default {
 	font-weight: 700;
 }
 
+/* 头部信息（图标 + 文案） */
 .header-info {
 	display: flex;
 	align-items: center;
-	padding: 20rpx 40rpx 60rpx;
+	gap: 18rpx;
+	/* 使 header-info 距离 nav-bar 有一个适当 margin */
+	margin-top: 6rpx;
+	padding-bottom: 18rpx;
 }
 
+/* 大图标 */
 .header-icon {
-	font-size: 48rpx;
-	margin-right: 24rpx;
+	font-size: 44rpx;
+	margin-right: 10rpx;
 }
 
+/* 标题与副标题容器 */
 .header-text {
 	display: flex;
 	flex-direction: column;
 }
 
+/* 标题大小略微缩小，防止在小屏设备换行 */
 .form-title {
-	font-size: 48rpx;
+	font-size: 36rpx;
 	font-weight: 800;
 	color: #ffffff;
-	text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-	letter-spacing: -1rpx;
-	margin-bottom: 8rpx;
+	text-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.12);
+	letter-spacing: -0.5rpx;
+	margin-bottom: 6rpx;
 }
 
 .form-subtitle {
-	font-size: 26rpx;
-	color: rgba(255, 255, 255, 0.9);
+	font-size: 22rpx;
+	color: rgba(255, 255, 255, 0.95);
 	font-weight: 500;
-	letter-spacing: 0.5rpx;
+	letter-spacing: 0.3rpx;
 }
 
 /* ==================== 表单区域 ==================== */
 .form-section {
-	padding: 10rpx 40rpx 40rpx;
+	padding: 40rpx 28rpx 60rpx;
 }
 
+/* 卡片样式 */
 .form-card {
 	position: relative;
 	background: #ffffff;
-	border-radius: 32rpx;
-	padding: 40rpx;
-	margin-bottom: 32rpx;
-	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-	border: 1rpx solid rgba(255, 255, 255, 0.8);
+	border-radius: 24rpx;
+	padding: 48rpx; /* 原32rpx → 48rpx，内部更宽松 */
+	margin-bottom: 44rpx; /* 原28rpx → 44rpx，卡片之间更分明 */
+	box-shadow: 0 8rpx 28rpx rgba(0, 0, 0, 0.06);
+	border: 1rpx solid rgba(255, 255, 255, 0.85);
 	overflow: hidden;
 }
 
@@ -376,34 +392,37 @@ export default {
 	position: absolute;
 	top: 0;
 	right: 0;
-	width: 200rpx;
-	height: 200rpx;
-	background: radial-gradient(circle, rgba(246, 213, 92, 0.1) 0%, transparent 70%);
+	width: 180rpx;
+	height: 180rpx;
+	background: radial-gradient(circle, rgba(246, 213, 92, 0.08) 0%, transparent 70%);
 	border-radius: 50%;
-	transform: translate(50rpx, -50rpx);
+	transform: translate(40rpx, -40rpx);
+	opacity: 0.9;
 }
 
+/* 卡片头部 */
 .form-header {
 	display: flex;
 	align-items: center;
-	margin-bottom: 32rpx;
+	margin-bottom: 24rpx;
 	position: relative;
 	z-index: 2;
 }
 
 .form-icon {
-	font-size: 32rpx;
-	margin-right: 16rpx;
+	font-size: 30rpx;
+	margin-right: 12rpx;
 }
 
 .form-section-title {
-	font-size: 28rpx;
+	font-size: 26rpx;
 	font-weight: 700;
 	color: #2d3748;
 }
 
+/* 表单项 */
 .form-item {
-	margin-bottom: 32rpx;
+	margin-bottom: 24rpx;
 	position: relative;
 	z-index: 2;
 }
@@ -415,25 +434,25 @@ export default {
 .label {
 	display: flex;
 	align-items: center;
-	margin-bottom: 16rpx;
+	margin-bottom: 12rpx;
 }
 
 .label-text {
-	font-size: 28rpx;
+	font-size: 26rpx;
 	color: #2d3748;
 	font-weight: 600;
 }
 
 .required {
-	font-size: 24rpx;
+	font-size: 22rpx;
 	color: #e53e3e;
-	margin-left: 4rpx;
+	margin-left: 6rpx;
 }
 
 .optional {
-	font-size: 24rpx;
+	font-size: 22rpx;
 	color: #718096;
-	margin-left: 4rpx;
+	margin-left: 6rpx;
 }
 
 /* ==================== 选择器样式 ==================== */
@@ -441,11 +460,11 @@ export default {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 24rpx 20rpx;
+	padding: 18rpx 16rpx;
 	background: #f7fafc;
-	border-radius: 16rpx;
-	border: 2rpx solid transparent;
-	transition: all 0.3s ease;
+	border-radius: 14rpx;
+	border: 1rpx solid rgba(0,0,0,0.02);
+	transition: all 0.18s ease;
 }
 
 .picker:active {
@@ -454,12 +473,12 @@ export default {
 }
 
 .picker.disabled {
-	opacity: 0.5;
+	opacity: 0.6;
 	background: #edf2f7;
 }
 
 .picker-text {
-	font-size: 28rpx;
+	font-size: 26rpx;
 	color: #2d3748;
 	font-weight: 500;
 }
@@ -472,15 +491,15 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 28rpx;
-	height: 28rpx;
-	background: rgba(66, 153, 225, 0.1);
+	width: 32rpx;
+	height: 32rpx;
+	background: rgba(66, 153, 225, 0.08);
 	border-radius: 50%;
-	border: 1rpx solid rgba(66, 153, 225, 0.2);
+	border: 1rpx solid rgba(66, 153, 225, 0.12);
 }
 
 .arrow-icon {
-	font-size: 16rpx;
+	font-size: 18rpx;
 	color: #4299e1;
 	font-weight: 600;
 }
@@ -489,22 +508,22 @@ export default {
 .input-wrapper,
 .textarea-wrapper {
 	background: #f7fafc;
-	border-radius: 16rpx;
-	border: 2rpx solid transparent;
-	transition: all 0.3s ease;
+	border-radius: 14rpx;
+	border: 1rpx solid rgba(0,0,0,0.02);
+	transition: all 0.18s ease;
 }
 
 .input-wrapper:focus-within,
 .textarea-wrapper:focus-within {
 	border-color: #4299e1;
 	background: #ebf8ff;
-	box-shadow: 0 0 0 4rpx rgba(66, 153, 225, 0.1);
+	box-shadow: 0 0 0 4rpx rgba(66, 153, 225, 0.06);
 }
 
 .input {
 	width: 100%;
-	padding: 24rpx 20rpx;
-	font-size: 28rpx;
+	padding: 18rpx 16rpx;
+	font-size: 26rpx;
 	color: #2d3748;
 	border: none;
 	outline: none;
@@ -514,9 +533,9 @@ export default {
 
 .textarea {
 	width: 100%;
-	min-height: 120rpx;
-	padding: 24rpx 20rpx;
-	font-size: 28rpx;
+	min-height: 110rpx;
+	padding: 18rpx 16rpx;
+	font-size: 26rpx;
 	color: #2d3748;
 	border: none;
 	outline: none;
@@ -536,40 +555,41 @@ export default {
 }
 
 .submit-wrapper {
-	padding: 30rpx 40rpx;
+	padding: 22rpx 24rpx;
 	background: rgba(255, 255, 255, 0.95);
-	backdrop-filter: blur(20rpx);
-	border-top: 1rpx solid rgba(255, 255, 255, 0.3);
-	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(10rpx);
+	border-top: 1rpx solid rgba(255, 255, 255, 0.6);
+	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
 }
 
 .submit-btn {
 	position: relative;
 	width: 100%;
-	height: 88rpx;
+	height: 84rpx;
 	background: #cbd5e0;
 	border: none;
 	border-radius: 44rpx;
-	font-size: 32rpx;
+	font-size: 30rpx;
 	font-weight: 600;
-	transition: all 0.3s ease;
+	transition: all 0.22s ease;
 	overflow: hidden;
 }
 
 .submit-btn.active {
 	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-	box-shadow: 0 8rpx 32rpx rgba(66, 153, 225, 0.4);
+	box-shadow: 0 8rpx 28rpx rgba(66, 153, 225, 0.32);
 }
 
 .submit-btn:active.active {
 	transform: translateY(2rpx);
-	box-shadow: 0 4rpx 16rpx rgba(66, 153, 225, 0.6);
+	box-shadow: 0 4rpx 16rpx rgba(66, 153, 225, 0.5);
 }
 
 .submit-text {
 	color: #a0aec0;
 	position: relative;
 	z-index: 2;
+	font-size: 28rpx;
 }
 
 .submit-btn.active .submit-text {
@@ -581,7 +601,7 @@ export default {
 	inset: -4rpx;
 	background: linear-gradient(135deg, #4299e1, #3182ce);
 	border-radius: 48rpx;
-	opacity: 0.3;
+	opacity: 0.22;
 	filter: blur(8rpx);
 	z-index: 1;
 }

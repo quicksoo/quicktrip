@@ -22,7 +22,7 @@
 					<text class="spot-name">{{item.name}}</text>
 					<view class="price-city">
 						<text class="city">{{getCityName(item.city)}}</text>
-						<text class="price">¥{{item.price || '免费'}}</text>
+						<text class="price">{{ item.price > 0 ? `¥${item.price}` : '免费' }}</text>
 					</view>
 					<text class="description">{{item.reservationTime ? `提前${item.reservationTime}天预约` : '每日开放预约'}}</text>
 					<text class="book-url">预约链接: {{item.bookUrl || '暂无'}}</text>
@@ -70,14 +70,16 @@
 						</view>
 						
 						<view class="field">
-							<text class="label">预约链接 *</text>
-							<textarea v-model="formData.bookUrl" placeholder="请输入完整的预约链接（需以 http 开头）" class="textarea"></textarea>
+							<text class="label">小程序链接 *</text>
+							<textarea v-model="formData.shortLink" placeholder="小程序链接/公众号链接二选一" class="textarea"></textarea>
 						</view>
 						
 						<view class="field">
-							<text class="label">小程序链接</text>
-							<textarea v-model="formData.shortLink" placeholder="可选" class="textarea"></textarea>
+							<text class="label">公众号预约链接 *</text>
+							<textarea v-model="formData.bookUrl" placeholder="请输入完整的预约链接（需以 http 开头）" class="textarea"></textarea>
 						</view>
+						
+						
 						
 						<view class="field">
 							<text class="label">公众号名称</text>
@@ -104,20 +106,9 @@ export default {
 			showModal: false,
 			isEdit: false,
 			currentEditId: '',
-			cityIndex: 0,
-			selectedCityIndex: 0, // 当前选择的城市索引
+			currentSelectedCity: { name: '北京', code: 'beijing' }, // 当前选中的城市
 			loading: false,
 			saving: false,
-			cityOptions: [
-				{ name: '北京', code: 'beijing' },
-				{ name: '上海', code: 'shanghai' },
-				{ name: '广州', code: 'guangzhou' },
-				{ name: '深圳', code: 'shenzhen' },
-				{ name: '杭州', code: 'hangzhou' },
-				{ name: '南京', code: 'nanjing' },
-				{ name: '西安', code: 'xian' },
-				{ name: '成都', code: 'chengdu' }
-			],
 			formData: {
 				name: '',
 				city: 'beijing',
@@ -131,7 +122,7 @@ export default {
 	},
 	computed: {
 		currentCity() {
-			return this.cityOptions[this.selectedCityIndex] || this.cityOptions[0]
+			return this.currentSelectedCity
 		},
 		filteredScenicSpots() {
 			return this.scenicSpots
@@ -150,8 +141,7 @@ export default {
 				const lastCity = uni.getStorageSync('last_selected_city')
 				if (lastCity) {
 					const cityData = JSON.parse(lastCity)
-					const index = this.cityOptions.findIndex(city => city.code === cityData.code)
-					if (index !== -1) this.selectedCityIndex = index
+					this.currentSelectedCity = cityData
 				}
 			} catch (e) {
 				console.log('获取上次选择城市失败:', e)
@@ -164,9 +154,8 @@ export default {
 				const lastCity = uni.getStorageSync('last_selected_city')
 				if (lastCity) {
 					const cityData = JSON.parse(lastCity)
-					const index = this.cityOptions.findIndex(city => city.code === cityData.code)
-					if (index !== -1 && index !== this.selectedCityIndex) {
-						this.selectedCityIndex = index
+					if (cityData.code !== this.currentSelectedCity.code) {
+						this.currentSelectedCity = cityData
 					}
 				}
 			} catch (e) {
@@ -182,25 +171,24 @@ export default {
 
 		// 城市选择回调方法
 		onCitySelected(city) {
-			const index = this.cityOptions.findIndex(c => c.code === city.code)
-			if (index !== -1) {
-				this.selectedCityIndex = index
-				// 保存选择的城市到本地存储
-				try {
-					uni.setStorageSync('last_selected_city', JSON.stringify(city))
-				} catch (e) {
-					console.log('保存城市选择失败:', e)
-				}
-				// 重新加载当前城市的数据
-				this.loadScenicSpots()
+			// 直接设置当前选中的城市
+			this.currentSelectedCity = city
+			
+			// 保存选择的城市到本地存储
+			try {
+				uni.setStorageSync('last_selected_city', JSON.stringify(city))
+			} catch (e) {
+				console.log('保存城市选择失败:', e)
 			}
+			// 重新加载当前城市的数据
+			this.loadScenicSpots()
 		},
 
 		goBack() {
 			uni.navigateBack()
 		},
 
-		// 从云端加载景点（按 createdAt 降序）
+		// 从云端加载景点
 		async loadScenicSpots() {
 			this.loading = true
 			try {
@@ -209,7 +197,7 @@ export default {
 					.where({
 						city: this.currentCity.code
 					})
-					.orderBy('createdAt', 'desc')
+					.orderBy('sort', 'asc')
 					.get()
 				this.scenicSpots = res.data || []
 			} catch (error) {
@@ -221,8 +209,8 @@ export default {
 		},
 
 		getCityName(cityCode) {
-			const city = this.cityOptions.find(c => c.code === cityCode)
-			return city ? city.name : cityCode
+			// 简单返回城市代码，或者可以维护一个城市代码到名称的映射
+			return cityCode
 		},
 
 		showAddModal() {
@@ -248,14 +236,6 @@ export default {
 				bookUrl: spot.bookUrl || '',
 				shortLink: spot.shortLink || '',
 				wechatAccount: spot.wechatAccount || ''
-			}
-			const idx = this.cityOptions.findIndex(c => c.code === this.formData.city)
-			if (idx < 0) {
-				console.warn('城市 code 未找到:', this.formData.city)
-				this.cityIndex = 0
-				this.formData.city = 'beijing'
-			} else {
-				this.cityIndex = idx
 			}
 			this.showModal = true
 			// 阻止页面滚动
@@ -340,12 +320,8 @@ export default {
 				uni.showToast({ title: '请输入景点名称', icon: 'none' })
 				return
 			}
-			if (!this.formData.bookUrl || !this.formData.bookUrl.trim()) {
+			if (!this.formData.bookUrl || !this.formData.shortLink) {
 				uni.showToast({ title: '请输入预约链接', icon: 'none' })
-				return
-			}
-			if (!this.formData.bookUrl.trim().startsWith('http://') && !this.formData.bookUrl.trim().startsWith('https://')) {
-				uni.showToast({ title: '预约链接需以 http:// 或 https:// 开头', icon: 'none' })
 				return
 			}
 
@@ -820,7 +796,7 @@ export default {
 	
 	.form {
 		padding: 20rpx;
-		padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+		padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
 	}
 	
 	.sheet-header {

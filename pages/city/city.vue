@@ -11,7 +11,8 @@
 						</view>
 					</view>
 					<view class="nav-center"></view>
-					<view class="nav-right"></view>
+					<view class="nav-right">
+					</view>
 				</view>
 
 				<!-- 搜索框 -->
@@ -26,22 +27,31 @@
 		</view>
 
 		<!-- 内容区域 -->
-		<scroll-view class="content" scroll-y="true">
-			<!-- 当前定位城市 -->
-			<view class="location-section">
-				<view class="location-card" @tap="selectCurrentCity">
-					<view class="card-bg-pattern"></view>
-					<view class="location-content">
-						<view class="location-icon-wrapper">
-							<text class="location-icon">📍</text>
+		<scroll-view class="content" scroll-y="true" :scroll-into-view="scrollIntoView">
+			<!-- 历史选择城市 -->
+			<view class="history-section" v-if="historyQueue.length > 0">
+				<view class="section-header">
+					<view class="section-left">
+						<view class="section-icon">🕒</view>
+						<text class="section-title">历史选择</text>
+					</view>
+					<view class="section-right">
+						<view class="edit-button" @tap="toggleEditMode">
+							<text class="edit-icon">{{ isEditMode ? '完成' : '编辑' }}</text>
 						</view>
-						<view class="location-info">
-							<text class="location-label">当前定位城市</text>
-							<text class="current-city">{{ currentLocationCity }}</text>
+						<view class="history-actions" v-if="isEditMode">
+							<button class="clear-all-btn" @tap="clearAllHistory">清空</button>
 						</view>
-						<view class="location-arrow">
-							<image class="arrow-icon" src="/static/right-arr.png" mode="aspectFit"></image>
+					</view>
+				</view>
+				<view class="cities-grid">
+					<view class="city-item history-item" :class="{ 'active': item.code === selectedCityCode, 'edit-mode': isEditMode }"
+						v-for="(item, index) in historyQueue" :key="index" @tap="handleHistoryItemClick(item, index)">
+						<view class="delete-btn" v-if="isEditMode" @tap.stop="removeHistoryItem(index)">
+							<text class="delete-icon">×</text>
 						</view>
+						<text class="city-name">{{ item.name }}</text>
+						<view class="city-glow" v-if="item.code === selectedCityCode && !isEditMode"></view>
 					</view>
 				</view>
 			</view>
@@ -49,8 +59,10 @@
 			<!-- 热门城市 -->
 			<view class="hot-cities-section">
 				<view class="section-header">
-					<view class="section-icon">🔥</view>
-					<text class="section-title">热门城市</text>
+					<view class="section-left">
+						<view class="section-icon">🔥</view>
+						<text class="section-title">热门城市</text>
+					</view>
 				</view>
 				<view class="cities-grid">
 					<view class="city-item" :class="{ 'active': item.code === selectedCityCode }"
@@ -64,8 +76,10 @@
 			<!-- 城市列表 -->
 			<view class="cities-list-section">
 				<view class="list-header">
-					<view class="section-icon">🏙️</view>
-					<text class="section-title">全部城市</text>
+					<view class="section-left">
+						<view class="section-icon">🏙️</view>
+						<text class="section-title">全部城市</text>
+					</view>
 				</view>
 				<!-- 字母索引对应的城市 -->
 				<view class="letter-section" v-for="(letter, index) in sortedLetters" :key="index"
@@ -103,20 +117,23 @@ export default {
 		return {
 			searchKeyword: '',
 			selectedCityCode: '',
-			currentLocationCity: '西安市',
+			isEditMode: false, // 编辑模式
+			historyQueue: [], // 历史选择城市队列，最大8个
+			maxHistorySize: 8, // 历史记录最大数量
+			scrollIntoView: '', // 滚动到指定元素
 			hotCities: [
 				{ name: '北京', code: 'beijing', pinyin: 'beijing' },
+				{ name: '西安', code: 'xian', pinyin: 'xian' },
 				{ name: '成都', code: 'chengdu', pinyin: 'chengdu' },
 				{ name: '重庆', code: 'chongqing', pinyin: 'chongqing' },
 				{ name: '广州', code: 'guangzhou', pinyin: 'guangzhou' },
 				{ name: '杭州', code: 'hangzhou', pinyin: 'hangzhou' },
 				{ name: '南京', code: 'nanjing', pinyin: 'nanjing' },
 				{ name: '上海', code: 'shanghai', pinyin: 'shanghai' },
-				{ name: '深圳', code: 'shenzhen', pinyin: 'shenzhen' },
 				{ name: '苏州', code: 'suzhou', pinyin: 'suzhou' },
-				{ name: '天津', code: 'tianjin', pinyin: 'tianjin' },
 				{ name: '武汉', code: 'wuhan', pinyin: 'wuhan' },
-				{ name: '西安', code: 'xian', pinyin: 'xian' }
+				{ name: '昆明', code: 'kunming', pinyin: 'kunming'},
+				{ name: '三亚', code: 'sanya', pinyin: 'sanya' }
 			],
 			allCities:[
 				// A
@@ -478,6 +495,9 @@ export default {
 		if (options.current) {
 			this.selectedCityCode = options.current
 		}
+		// 加载历史选择记录
+		this.loadHistoryQueue()
+		console.log('页面加载完成，历史记录数量:', this.historyQueue.length)
 	},
 	methods: {
 		goBack() {
@@ -488,16 +508,10 @@ export default {
 			this.searchKeyword = e.detail.value
 		},
 
-		selectCurrentCity() {
-			// 选择当前定位城市
-			const currentCity = {
-				name: this.currentLocationCity,
-				code: 'xian' // 这里可以根据实际定位获取城市代码
-			}
-			this.selectCity(currentCity)
-		},
-		
 		selectCity(city) {
+			// 添加到历史记录
+			this.addToHistoryQueue(city)
+			
 			// 返回选中的城市信息
 			const pages = getCurrentPages()
 			const prevPage = pages[pages.length - 2]
@@ -509,12 +523,130 @@ export default {
 			uni.navigateBack()
 		},
 
-		scrollToLetter(letter) {
-			// 滚动到指定字母
-			uni.pageScrollTo({
-				selector: '#letter-' + letter,
-				duration: 300
+		// 加载历史选择记录
+		loadHistoryQueue() {
+			try {
+				const history = uni.getStorageSync('city_history_queue')
+				if (history) {
+					this.historyQueue = JSON.parse(history)
+				}
+			} catch (e) {
+				console.log('加载历史记录失败:', e)
+				this.historyQueue = []
+			}
+		},
+
+		// 保存历史选择记录
+		saveHistoryQueue() {
+			try {
+				uni.setStorageSync('city_history_queue', JSON.stringify(this.historyQueue))
+			} catch (e) {
+				console.log('保存历史记录失败:', e)
+			}
+		},
+
+		// 添加城市到历史队列
+		addToHistoryQueue(city) {
+			console.log('添加城市到历史队列:', city.name)
+			
+			// 检查是否已存在，如果存在则移除旧的
+			const existingIndex = this.historyQueue.findIndex(item => item.code === city.code)
+			if (existingIndex !== -1) {
+				console.log('城市已存在，移除旧记录:', existingIndex)
+				this.historyQueue.splice(existingIndex, 1)
+			}
+
+			// 添加到队列头部
+			this.historyQueue.unshift(city)
+			console.log('当前历史队列长度:', this.historyQueue.length)
+
+			// 如果超过最大数量，移除队列尾部元素
+			if (this.historyQueue.length > this.maxHistorySize) {
+				const removed = this.historyQueue.pop()
+				console.log('队列已满，移除:', removed.name)
+			}
+
+			// 保存到本地存储
+			this.saveHistoryQueue()
+		},
+
+		// 切换编辑模式
+		toggleEditMode() {
+			this.isEditMode = !this.isEditMode
+			console.log('切换编辑模式:', this.isEditMode, '历史记录数量:', this.historyQueue.length)
+			
+			if (this.isEditMode) {
+				uni.showToast({
+					title: '进入编辑模式',
+					icon: 'none',
+					duration: 1000
+				})
+			} else {
+				uni.showToast({
+					title: '退出编辑模式',
+					icon: 'none',
+					duration: 1000
+				})
+			}
+		},
+
+		// 处理历史记录项点击
+		handleHistoryItemClick(city, index) {
+			if (this.isEditMode) {
+				// 编辑模式下不执行选择操作
+				return
+			}
+			this.selectCity(city)
+		},
+
+		// 移除单个历史记录
+		removeHistoryItem(index) {
+			console.log('删除历史记录项:', index, this.historyQueue[index])
+			
+			if (index >= 0 && index < this.historyQueue.length) {
+				this.historyQueue.splice(index, 1)
+				this.saveHistoryQueue()
+				
+				uni.showToast({
+					title: '已删除',
+					icon: 'success',
+					duration: 1000
+				})
+				
+				// 如果历史记录为空，退出编辑模式
+				if (this.historyQueue.length === 0) {
+					this.isEditMode = false
+				}
+			}
+		},
+
+		// 清空所有历史记录
+		clearAllHistory() {
+			uni.showModal({
+				title: '确认清空',
+				content: '确定要清空所有历史选择记录吗？',
+				success: (res) => {
+					if (res.confirm) {
+						this.historyQueue = []
+						this.saveHistoryQueue()
+						this.isEditMode = false
+						uni.showToast({
+							title: '已清空',
+							icon: 'success'
+						})
+					}
+				}
 			})
+		},
+
+		scrollToLetter(letter) {
+			// 使用 scroll-into-view 属性滚动到指定字母
+			this.scrollIntoView = 'letter-' + letter
+			
+			// 清除滚动标记，避免影响后续滚动
+			setTimeout(() => {
+				this.scrollIntoView = ''
+			}, 500)
 		}
 	}
 }
@@ -549,7 +681,7 @@ export default {
 .header-content {
 	position: relative;
 	z-index: 2;
-	padding-top: env(safe-area-inset-top);
+	padding-top: calc(60rpx + env(safe-area-inset-top));
 }
 
 .nav-bar {
@@ -567,6 +699,26 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.edit-button {
+	background: #f7fafc;
+	border: 1rpx solid #e2e8f0;
+	border-radius: 16rpx;
+	padding: 8rpx 16rpx;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+	min-width: 60rpx;
+	text-align: center;
+}
+
+.edit-button:active {
+	background: #edf2f7;
+}
+
+.edit-icon {
+	font-size: 24rpx;
+	color: #4a5568;
+	font-weight: 500;
 }
 
 .back-button {
@@ -628,96 +780,71 @@ export default {
 	padding: 20rpx 0 40rpx;
 }
 
-/* ==================== 定位区域 ==================== */
-.location-section {
+/* ==================== 历史选择区域 ==================== */
+.history-section {
 	padding: 0 40rpx 20rpx;
 }
 
-.location-card {
-	position: relative;
-	background: #ffffff;
-	border-radius: 32rpx;
-	padding: 32rpx;
-	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-	border: 1rpx solid rgba(255, 255, 255, 0.8);
-	overflow: hidden;
-}
-
-.card-bg-pattern {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 150rpx;
-	height: 150rpx;
-	background: radial-gradient(circle, rgba(246, 213, 92, 0.1) 0%, transparent 70%);
-	border-radius: 50%;
-	transform: translate(30rpx, -30rpx);
-}
-
-.location-content {
+.section-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	position: relative;
-	z-index: 2;
+	margin-bottom: 24rpx;
 }
 
-.location-icon-wrapper {
-	width: 56rpx;
-	height: 56rpx;
-	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+.history-actions {
+	display: flex;
+	align-items: center;
+}
+
+.clear-all-btn {
+	background: rgba(239, 68, 68, 0.1);
+	color: #ef4444;
+	border: 1rpx solid rgba(239, 68, 68, 0.2);
 	border-radius: 16rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin-right: 24rpx;
-	box-shadow: 0 4rpx 16rpx rgba(66, 153, 225, 0.3);
-}
-
-.location-icon {
+	padding: 8rpx 16rpx;
 	font-size: 24rpx;
-	color: #ffffff;
+	font-weight: 500;
 }
 
-.location-info {
-	display: flex;
-	flex-direction: column;
+.clear-all-btn:active {
+	background: rgba(239, 68, 68, 0.2);
 }
 
-.location-label {
-	font-size: 24rpx;
-	color: #718096;
-	margin-bottom: 4rpx;
+.history-item {
+	position: relative;
 }
 
-.current-city {
-	font-size: 28rpx;
-	color: #2d3748;
-	font-weight: 600;
+.history-item.edit-mode {
+	animation: shake 0.3s ease-in-out;
 }
 
-.location-arrow {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40rpx;
-	height: 40rpx;
-}
-
-.location-arrow .arrow-icon {
+.delete-btn {
+	position: absolute;
+	top: -8rpx;
+	right: -8rpx;
 	width: 32rpx;
 	height: 32rpx;
-	opacity: 0.8;
+	background: #ef4444;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
+	box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.3);
 }
 
-.location-card {
-	cursor: pointer;
-	transition: all 0.3s ease;
+.delete-icon {
+	font-size: 20rpx;
+	color: #ffffff;
+	font-weight: bold;
+	line-height: 1;
 }
 
-.location-card:active {
-	transform: translateY(1rpx);
-	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+@keyframes shake {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-2rpx); }
+	75% { transform: translateX(2rpx); }
 }
 
 /* ==================== 热门城市 ==================== */
@@ -729,7 +856,19 @@ export default {
 .list-header {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	margin-bottom: 24rpx;
+}
+
+.section-left {
+	display: flex;
+	align-items: center;
+}
+
+.section-right {
+	display: flex;
+	align-items: center;
+	gap: 16rpx;
 }
 
 .section-icon {

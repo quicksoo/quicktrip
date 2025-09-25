@@ -137,17 +137,7 @@ export default {
 	data() {
 		return {
 			searchKeyword: '',
-			cityIndex: 0,
-			cityList: [
-				{ name: '北京', code: 'beijing' },
-				{ name: '上海', code: 'shanghai' },
-				{ name: '广州', code: 'guangzhou' },
-				{ name: '深圳', code: 'shenzhen' },
-				{ name: '杭州', code: 'hangzhou' },
-				{ name: '南京', code: 'nanjing' },
-				{ name: '西安', code: 'xian' },
-				{ name: '成都', code: 'chengdu' }
-			],
+			currentSelectedCity: { name: '北京', code: 'beijing' }, // 当前选中的城市
 			scenicSpots: [],
 			loading: false,
 			showQrModal: false,   // 控制预约引导模态框
@@ -157,7 +147,7 @@ export default {
 	},
 	computed: {
 		currentCity() {
-			return this.cityList[this.cityIndex] || this.cityList[0]
+			return this.currentSelectedCity
 		},
 		filteredScenicSpots() {
 			const dataSource = this.scenicSpots.length > 0 ? this.scenicSpots : []
@@ -180,8 +170,7 @@ export default {
 				const lastCity = uni.getStorageSync('last_selected_city')
 				if (lastCity) {
 					const cityData = JSON.parse(lastCity)
-					const index = this.cityList.findIndex(city => city.code === cityData.code)
-					if (index !== -1) this.cityIndex = index
+					this.currentSelectedCity = cityData
 				}
 			} catch (e) {
 				console.log('获取上次选择城市失败:', e)
@@ -197,7 +186,7 @@ export default {
 					.where({
 						city: this.currentCity.code
 					})
-					.orderBy('createdAt', 'desc')
+					.orderBy('sort', 'asc')
 					.get()
 				this.scenicSpots = res.data || []
 			} catch (error) {
@@ -216,18 +205,17 @@ export default {
 
 		// 城市选择回调方法
 		onCitySelected(city) {
-			const index = this.cityList.findIndex(c => c.code === city.code)
-			if (index !== -1) {
-				this.cityIndex = index
-				// 保存选择的城市到本地存储
-				try {
-					uni.setStorageSync('last_selected_city', JSON.stringify(city))
-				} catch (e) {
-					console.log('保存城市选择失败:', e)
-				}
-				// 重新加载当前城市的数据
-				this.loadScenicSpots()
+			// 直接设置当前选中的城市，不需要维护固定列表
+			this.currentSelectedCity = city
+			
+			// 保存选择的城市到本地存储
+			try {
+				uni.setStorageSync('last_selected_city', JSON.stringify(city))
+			} catch (e) {
+				console.log('保存城市选择失败:', e)
 			}
+			// 重新加载当前城市的数据
+			this.loadScenicSpots()
 		},
 
 		async jumpToAnotherMiniProgram(scenic) {

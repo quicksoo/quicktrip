@@ -46,6 +46,8 @@
 				</view>
 			</view>
 			
+
+			<!-- 联系我们 -->
 			<view class="section-card contact-card" @tap="goToFeedback">
 				<view class="card-bg-pattern"></view>
 				<view class="contact-content">
@@ -80,7 +82,22 @@ export default {
 	data() {
 		return {
 			clickCount: 0,
-			clickTimer: null
+			clickTimer: null,
+			totalCities: '50+',
+			totalSpots: '200+',
+			totalUsers: '1000+',
+			updateLogs: [
+				{
+					version: 'v1.0.0',
+					date: '2024-09-25',
+					items: [
+						'首次发布，支持全国主要景点预约',
+						'新增城市选择和历史记录功能',
+						'优化用户界面和交互体验',
+						'添加景点反馈和管理功能'
+					]
+				}
+			]
 		}
 	},
 	methods: {
@@ -134,7 +151,7 @@ export default {
 /* ==================== 头部区域 ==================== */
 .header-section {
 	position: relative;
-	padding-bottom: 40rpx;
+	padding-bottom: 10rpx;
 }
 
 .header-bg {
@@ -155,8 +172,8 @@ export default {
 	align-items: flex-end;
 	justify-content: flex-start;
 	padding: 40rpx;
-	padding-top: calc(env(safe-area-inset-top) + 80rpx);
-	padding-bottom: 60rpx;
+	padding-top: calc(150rpx + env(safe-area-inset-top));
+	padding-bottom: calc(10rpx + env(safe-area-inset-bottom));
 	min-height: 280rpx;
 	box-sizing: border-box;
 }
@@ -335,6 +352,162 @@ export default {
 	width: 32rpx;
 	height: 32rpx;
 	opacity: 0.8;
+}
+
+/* ==================== 功能特色 ==================== */
+.feature-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 24rpx;
+}
+
+.feature-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	padding: 24rpx 16rpx;
+	background: rgba(246, 213, 92, 0.05);
+	border-radius: 20rpx;
+	border: 1rpx solid rgba(246, 213, 92, 0.1);
+}
+
+.feature-icon {
+	font-size: 32rpx;
+	margin-bottom: 12rpx;
+}
+
+.feature-title {
+	font-size: 26rpx;
+	font-weight: 600;
+	color: #2d3748;
+	margin-bottom: 8rpx;
+}
+
+.feature-desc {
+	font-size: 22rpx;
+	color: #718096;
+	line-height: 1.4;
+}
+
+/* ==================== 统计数据 ==================== */
+.stats-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24rpx;
+}
+
+.stat-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	padding: 32rpx 16rpx;
+	background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
+	border-radius: 20rpx;
+	border: 1rpx solid rgba(66, 153, 225, 0.1);
+}
+
+.stat-number {
+	font-size: 36rpx;
+	font-weight: 800;
+	color: #4299e1;
+	margin-bottom: 8rpx;
+	text-shadow: 0 2rpx 8rpx rgba(66, 153, 225, 0.2);
+}
+
+.stat-label {
+	font-size: 24rpx;
+	color: #718096;
+	font-weight: 500;
+}
+
+/* ==================== 更新日志 ==================== */
+.changelog-list {
+	display: flex;
+	flex-direction: column;
+	gap: 24rpx;
+}
+
+.changelog-item {
+	padding: 24rpx;
+	background: rgba(237, 137, 54, 0.05);
+	border-radius: 16rpx;
+	border-left: 4rpx solid #ed8936;
+}
+
+.changelog-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16rpx;
+}
+
+.changelog-version {
+	font-size: 26rpx;
+	font-weight: 700;
+	color: #ed8936;
+}
+
+.changelog-date {
+	font-size: 22rpx;
+	color: #718096;
+}
+
+.changelog-content {
+	display: flex;
+	flex-direction: column;
+	gap: 8rpx;
+}
+
+.changelog-item-text {
+	font-size: 24rpx;
+	color: #4a5568;
+	line-height: 1.5;
+}
+
+/* ==================== 开发团队 ==================== */
+.team-info {
+	display: flex;
+	flex-direction: column;
+	gap: 24rpx;
+}
+
+.team-desc {
+	font-size: 28rpx;
+	color: #4a5568;
+	line-height: 1.6;
+	text-align: center;
+	padding: 0 16rpx;
+}
+
+.team-values {
+	display: flex;
+	flex-direction: column;
+	gap: 16rpx;
+}
+
+.value-item {
+	display: flex;
+	align-items: center;
+	padding: 16rpx 20rpx;
+	background: rgba(72, 187, 120, 0.05);
+	border-radius: 16rpx;
+	border: 1rpx solid rgba(72, 187, 120, 0.1);
+}
+
+.value-title {
+	font-size: 26rpx;
+	font-weight: 600;
+	color: #2d3748;
+	margin-right: 16rpx;
+	min-width: 80rpx;
+}
+
+.value-desc {
+	font-size: 24rpx;
+	color: #718096;
+	flex: 1;
 }
 
 /* ==================== 底部区域 ==================== */
