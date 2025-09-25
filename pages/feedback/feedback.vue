@@ -29,38 +29,18 @@
 				<view class="card-bg-pattern"></view>
 				<view class="form-header">
 					<view class="form-icon">📍</view>
-					<text class="form-section-title">位置信息</text>
+					<text class="form-section-label">选择城市：</text>
+			
+					<view class="location-selector" @tap="goToCitySelect">
+						<view class="location-pill">
+							<text class="location-name">{{currentCity.name}}</text>
+							<text class="location-chevron">›</text>
+						</view>
+					</view>
+
 				</view>
 				
-				<view class="form-item">
-					<view class="label">
-						<text class="label-text">选择省份</text>
-						<text class="required">*</text>
-					</view>
-					<picker @change="onProvinceChange" :value="provinceIndex" :range="provinces">
-						<view class="picker">
-							<text class="picker-text" :class="{'placeholder': !selectedProvince}">{{selectedProvince || '请选择省份'}}</text>
-							<view class="picker-arrow">
-								<text class="arrow-icon">›</text>
-							</view>
-						</view>
-					</picker>
-				</view>
 				
-				<view class="form-item">
-					<view class="label">
-						<text class="label-text">选择城市</text>
-						<text class="required">*</text>
-					</view>
-					<picker @change="onCityChange" :value="cityIndex" :range="cities" :disabled="!selectedProvince">
-						<view class="picker" :class="{'disabled': !selectedProvince}">
-							<text class="picker-text" :class="{'placeholder': !selectedCity}">{{selectedCity || '请选择城市'}}</text>
-							<view class="picker-arrow">
-								<text class="arrow-icon">›</text>
-							</view>
-						</view>
-					</picker>
-				</view>
 			</view>
 			
 			<view class="form-card">
@@ -136,59 +116,42 @@
 export default {
 	data() {
 		return {
-			provinces: [
-				'北京市', '天津市', '河北省', '山西省', '内蒙古自治区',
-				'辽宁省', '吉林省', '黑龙江省', '上海市', '江苏省',
-				'浙江省', '安徽省', '福建省', '江西省', '山东省',
-				'河南省', '湖北省', '湖南省', '广东省', '广西壮族自治区',
-				'海南省', '重庆市', '四川省', '贵州省', '云南省',
-				'西藏自治区', '陕西省', '甘肃省', '青海省', '宁夏回族自治区',
-				'新疆维吾尔自治区', '台湾省', '香港特别行政区', '澳门特别行政区'
-			],
 			cities: [],
 			provinceIndex: 0,
 			cityIndex: 0,
 			selectedProvince: '',
 			selectedCity: '',
+			currentSelectedCity: { name: '北京', code: 'beijing' }, 
 			scenicSpotName: '',
 			scenicSpotAddress: '',
-			reservationInfo: '',
-			cityData: {
-				'北京市': ['东城区', '西城区', '朝阳区', '丰台区', '石景山区', '海淀区', '门头沟区', '房山区', '通州区', '顺义区', '昌平区', '大兴区', '怀柔区', '平谷区', '密云区', '延庆区'],
-				'上海市': ['黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'],
-				'广东省': ['广州市', '深圳市', '珠海市', '汕头市', '佛山市', '韶关市', '湛江市', '肇庆市', '江门市', '茂名市', '惠州市', '梅州市', '汕尾市', '河源市', '阳江市', '清远市', '东莞市', '中山市', '潮州市', '揭阳市', '云浮市'],
-				'浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市', '湖州市', '绍兴市', '金华市', '衢州市', '舟山市', '台州市', '丽水市'],
-				'江苏省': ['南京市', '无锡市', '徐州市', '常州市', '苏州市', '南通市', '连云港市', '淮安市', '盐城市', '扬州市', '镇江市', '泰州市', '宿迁市']
-			}
+			reservationInfo: ''
 		}
 	},
 	computed: {
 		canSubmit() {
-			return this.selectedProvince && this.selectedCity && this.scenicSpotName.trim()
-		}
+			return this.currentSelectedCity && this.scenicSpotName.trim()
+		},
+		currentCity() {
+			return this.currentSelectedCity
+		},
 	},
 	methods: {
 		goBack() {
 			uni.navigateBack()
 		},
 		
-		onProvinceChange(e) {
-			const index = e.detail.value
-			this.provinceIndex = index
-			this.selectedProvince = this.provinces[index]
-			this.selectedCity = ''
-			this.cityIndex = 0
-			
-			// 根据省份获取城市列表
-			this.cities = this.cityData[this.selectedProvince] || []
+		goToCitySelect() {
+			uni.navigateTo({
+				url: `/pages/city/city?current=${this.currentCity.code}`
+			})
 		},
-		
-		onCityChange(e) {
-			const index = e.detail.value
-			this.cityIndex = index
-			this.selectedCity = this.cities[index]
+
+		// 城市选择回调方法
+		onCitySelected(city) {
+			// 直接设置当前选中的城市，不需要维护固定列表
+			this.currentSelectedCity = city
 		},
-		
+
 		async submitFeedback() {
 			if (!this.canSubmit) {
 				uni.showToast({
