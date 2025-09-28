@@ -30,7 +30,7 @@
 					<view class="app-icon">
 						<image src="/static/logo.png" class="logo-image" mode="aspectFit"></image>
 					</view>
-					<view class="app-details">
+					<view class="app-details"  @tap="onTitleClick">
 						<text class="app-name">快约景</text>
 						<text class="app-version">版本 1.0.0</text>
 						<text class="app-description">一站式旅游小助手</text>
@@ -104,6 +104,12 @@
 
 <script>
 export default {
+data() {
+		return {
+			clickCount: 0
+		}
+	},
+
 	methods: {
 		goBack() {
 			uni.navigateBack()
@@ -113,6 +119,30 @@ export default {
 			uni.navigateTo({
 				url: '/pages/feedback/feedback'
 			})
+		},
+
+			// 标题点击事件 - 连续点击10次查看用户意见
+		onTitleClick() {
+			this.clickCount++
+			console.log('点击次数:', this.clickCount)
+			
+			// 清除之前的定时器
+			if (this.clickTimer) {
+				clearTimeout(this.clickTimer)
+			}
+			
+			// 设置3秒后重置点击计数
+			this.clickTimer = setTimeout(() => {
+				this.clickCount = 0
+				console.log('点击计数已重置')
+			}, 3000)
+			
+			// 连续点击10次触发查看功能
+			if (this.clickCount >= 10) {
+				uni.navigateTo({
+				url: '/pages/admin/admin'
+			})
+			}
 		},
 		
 		copyEmail() {
