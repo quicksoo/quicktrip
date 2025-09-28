@@ -24,8 +24,7 @@
 						<text class="city">{{getCityName(item.city)}}</text>
 						<text class="price">{{ item.price > 0 ? `¥${item.price}` : '免费' }}</text>
 					</view>
-					<text class="description">{{item.reservationTime ? `提前${item.reservationTime}天预约` : '每日开放预约'}}</text>
-					<text class="book-url">预约链接: {{item.bookUrl || '暂无'}}</text>
+					<text class="description">{{item.reservationTime}}</text>
 				</view>
 				<view class="spot-actions">
 					<button class="edit-btn" @tap="editSpot(item)">编辑</button>
@@ -57,7 +56,10 @@
 							<input v-model="formData.name" placeholder="请输入景点名称" class="input" />
 						</view>
 						
-
+						<view class="field">
+							<text class="label">排序序号</text>
+							<input v-model="formData.sort" type="number" min="0" placeholder="数字越小排序越靠前" class="input" />
+						</view>
 						
 						<view class="field">
 							<text class="label">预约时间</text>
@@ -116,7 +118,8 @@ export default {
 				price: 0,
 				bookUrl: '',
 				shortLink: '',
-				wechatAccount: ''
+				wechatAccount: '',
+				sort: 0
 			}
 		}
 	},
@@ -235,7 +238,8 @@ export default {
 				price: spot.price != null ? spot.price : 0,
 				bookUrl: spot.bookUrl || '',
 				shortLink: spot.shortLink || '',
-				wechatAccount: spot.wechatAccount || ''
+				wechatAccount: spot.wechatAccount || '',
+				sort: spot.sort != null ? spot.sort : 0
 			}
 			this.showModal = true
 			// 阻止页面滚动
@@ -300,7 +304,8 @@ export default {
 				price: 0,
 				bookUrl: '',
 				shortLink: '',
-				wechatAccount: ''
+				wechatAccount: '',
+				sort: 0
 			}
 		},
 
@@ -320,7 +325,7 @@ export default {
 				uni.showToast({ title: '请输入景点名称', icon: 'none' })
 				return
 			}
-			if (!this.formData.bookUrl || !this.formData.shortLink) {
+			if (!this.formData.bookUrl && !this.formData.shortLink) {
 				uni.showToast({ title: '请输入预约链接', icon: 'none' })
 				return
 			}
@@ -339,6 +344,7 @@ export default {
 					bookUrl: String(this.formData.bookUrl).trim(),
 					shortLink: String(this.formData.shortLink || '').trim(),
 					wechatAccount: String(this.formData.wechatAccount || '').trim(),
+					sort: Number(this.formData.sort) || 0,
 					updatedAt: Date.now()
 				}
 
@@ -357,7 +363,10 @@ export default {
 					uni.showToast({ title: '添加成功' })
 				}
 
-				this.closeModal()
+				// 成功后自动关闭弹窗并刷新列表
+				this.showModal = false
+				this.resetForm()
+				this.enablePageScroll()
 				this.loadScenicSpots()
 			} catch (error) {
 				console.error('保存失败', error)

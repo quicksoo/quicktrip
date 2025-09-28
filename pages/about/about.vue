@@ -4,71 +4,96 @@
 		<view class="header-section">
 			<view class="header-bg"></view>
 			<view class="header-content">
-				<view class="brand-area">
-					<text class="brand-title">快约景</text>
-					<text class="brand-subtitle">一站式约景小助手</text>
+				<view class="nav-bar">
+					<view class="nav-left" @tap="goBack">
+						<view class="back-button">
+							<text class="back-icon">‹</text>
+						</view>
+					</view>
+					<view class="nav-center"></view>
+					<view class="nav-right"></view>
+				</view>
+				<view class="header-info">
+					<view class="header-text">
+						<text class="page-title">关于我们</text>
+					</view>
 				</view>
 			</view>
 		</view>
 		
-		<!-- 主内容区域 -->
-		<view class="main-content">
-			<view class="section-card">
+		<!-- 内容区域 -->
+		<view class="content-section">
+			<!-- 应用信息 -->
+			<view class="info-card">
 				<view class="card-bg-pattern"></view>
-				<view class="section-header">
-					<view class="section-icon">📖</view>
-					<text class="section-title">产品说明</text>
-				</view>
-				<view class="section-content">
-					<text class="description">中国各大景点预约入口聚合，让用户快速找到预约入口。</text>
-				</view>
-			</view>
-			
-			<view class="section-card">
-				<view class="card-bg-pattern"></view>
-				<view class="section-header">
-					<view class="section-icon">⚠️</view>
-					<text class="section-title">重要声明</text>
-				</view>
-				<view class="section-content">
-					<view class="statement-item">
-						<view class="bullet-container">
-							<view class="bullet"></view>
-						</view>
-						<text class="statement-text">只做景点预约入口，不收集用户信息</text>
+				<view class="app-info">
+					<view class="app-icon">
+						<image src="/static/logo.png" class="logo-image" mode="aspectFit"></image>
 					</view>
-					<view class="statement-item">
-						<view class="bullet-container">
-							<view class="bullet"></view>
-						</view>
-						<text class="statement-text">以官方发布为准</text>
+					<view class="app-details">
+						<text class="app-name">快约景</text>
+						<text class="app-version">版本 1.0.0</text>
+						<text class="app-description">一站式旅游小助手</text>
 					</view>
 				</view>
 			</view>
 			
-
+			<!-- 产品声明 -->
+			<view class="feature-card">
+				<view class="card-bg-pattern"></view>
+				<view class="feature-header">
+					<view class="feature-icon">📋</view>
+					<text class="feature-title">产品声明</text>
+				</view>
+				<view class="feature-list">
+					<view class="feature-item">
+						<view class="feature-dot">🏛️</view>
+						<text class="feature-text">只做官方景点预约入口聚合</text>
+					</view>
+					<view class="feature-item">
+						<view class="feature-dot">🔒</view>
+						<text class="feature-text">不收集用户信息</text>
+					</view>
+					<view class="feature-item">
+						<view class="feature-dot">✅</view>
+						<text class="feature-text">以官方发布为准</text>
+					</view>
+				</view>
+			</view>
+			
 			<!-- 联系我们 -->
-			<view class="section-card contact-card" @tap="goToFeedback">
+			<view class="contact-card">
 				<view class="card-bg-pattern"></view>
-				<view class="contact-content">
-					<view class="contact-left">
-						<view class="contact-icon">💬</view>
-						<view class="contact-info">
-							<text class="contact-title">景点反馈</text>
-							<text class="contact-subtitle">告诉我们您想收录的景点</text>
+				<view class="contact-header">
+					<view class="contact-icon">📞</view>
+					<text class="contact-title">联系我们</text>
+				</view>
+				<view class="contact-list">
+					<view class="contact-item" @tap="goToFeedback">
+						<view class="contact-left">
+							<view class="contact-icon">💬</view>
+							<view class="contact-info">
+								<text class="contact-title">用户反馈</text>
+								<text class="contact-subtitle">您的宝贵意见是我们前进的动力</text>
+							</view>
+						</view>
+						<view class="contact-arrow">
+									<image class="arrow-icon" src="/static/right-arr.png" mode="aspectFit"></image>
+								</view>
+					</view>
+					<view class="contact-item" @tap="copyEmail">
+						<view class="contact-left">
+							<view class="contact-icon">📧</view>
+							<view class="contact-info">
+								<text class="contact-title">联系邮箱</text>
+								<text class="contact-subtitle">quickso_top@163.com</text>
+							</view>
+						</view>
+						<view class="contact-arrow">
+							<text class="copy-icon">📋</text>
 						</view>
 					</view>
-					<view class="contact-arrow">
-						<image class="arrow-icon" src="/static/right-arr.png" mode="aspectFit"></image>
-					</view>
 				</view>
-			</view>
-		</view>
-		
-		<!-- 底部版本信息 -->
-		<view class="footer">
-			<view class="version-container" @tap="onVersionClick">
-				<text class="version">版本 1.0.0</text>
 			</view>
 		</view>
 		
@@ -79,62 +104,48 @@
 
 <script>
 export default {
-	data() {
-		return {
-			clickCount: 0,
-			clickTimer: null,
-			totalCities: '50+',
-			totalSpots: '200+',
-			totalUsers: '1000+',
-			updateLogs: [
-				{
-					version: 'v1.0.0',
-					date: '2024-09-25',
-					items: [
-						'首次发布，支持全国主要景点预约',
-						'新增城市选择和历史记录功能',
-						'优化用户界面和交互体验',
-						'添加景点反馈和管理功能'
-					]
-				}
-			]
-		}
-	},
 	methods: {
+		goBack() {
+			uni.navigateBack()
+		},
+		
 		goToFeedback() {
 			uni.navigateTo({
 				url: '/pages/feedback/feedback'
 			})
 		},
 		
-		async onVersionClick() {
-			this.clickCount++
+		copyEmail() {
+			const email = 'quickso_top@163.com'
 			
-			// 清除之前的定时器
-			if (this.clickTimer) {
-				clearTimeout(this.clickTimer)
+			// 尝试使用系统剪贴板API
+			if (uni.setClipboardData) {
+				uni.setClipboardData({
+					data: email,
+					success: () => {
+						uni.showToast({
+							title: '邮箱已复制',
+							icon: 'success',
+							duration: 2000
+						})
+					},
+					fail: () => {
+						uni.showToast({
+							title: '复制失败，请手动复制',
+							icon: 'none',
+							duration: 2000
+						})
+					}
+				})
+			} else {
+				// 降级处理
+				uni.showModal({
+					title: '联系邮箱',
+					content: email,
+					showCancel: false,
+					confirmText: '知道了'
+				})
 			}
-			
-			// 设置3秒后重置计数
-			this.clickTimer = setTimeout(() => {
-				this.clickCount = 0
-			}, 3000)
-			
-			// 连续点击10次触发管理入口
-			if (this.clickCount === 10) {
-				this.clickCount = 0
-				await this.checkAdminAccess()
-			}
-		},
-		
-		async checkAdminAccess() {
-			// TODO: 后续添加openId验证逻辑
-			const ADMIN_OPENID = 'your_openid_here'
-			
-			// 临时直接进入管理页面
-			uni.navigateTo({
-				url: '/pages/admin/admin'
-			})
 		}
 	}
 }
@@ -146,12 +157,13 @@ export default {
 	min-height: 100vh;
 	background: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
 	position: relative;
+	padding-bottom: 120rpx;
 }
 
 /* ==================== 头部区域 ==================== */
 .header-section {
 	position: relative;
-	padding-bottom: 10rpx;
+	padding-bottom: 60rpx;
 }
 
 .header-bg {
@@ -159,83 +171,183 @@ export default {
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 280rpx;
+	height: 300rpx;
 	background: linear-gradient(135deg, #f6d55c 0%, #ed8936 100%);
-	border-radius: 0 0 50rpx 50rpx;
+	border-radius: 0 0 38rpx 38rpx;
 	box-shadow: 0 10rpx 40rpx rgba(237, 137, 54, 0.3);
+	z-index: 1;
 }
 
 .header-content {
 	position: relative;
 	z-index: 2;
-	display: flex;
-	align-items: flex-end;
-	justify-content: flex-start;
-	padding: 40rpx;
-	padding-top: calc(150rpx + env(safe-area-inset-top));
-	padding-bottom: calc(10rpx + env(safe-area-inset-bottom));
-	min-height: 280rpx;
-	box-sizing: border-box;
+	padding-top: calc(40rpx + env(safe-area-inset-top));
+	padding-left: 24rpx;
+	padding-right: 24rpx;
 }
 
-.brand-area {
+.nav-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 88rpx;
+}
+
+.nav-left,
+.nav-right {
+	width: 60rpx;
+	height: 60rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.nav-center {
+	flex: 1;
+}
+
+.back-button {
+	width: 48rpx;
+	height: 48rpx;
+	background: rgba(255, 255, 255, 0.12);
+	backdrop-filter: blur(10rpx);
+	border: 1rpx solid rgba(255, 255, 255, 0.18);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.back-icon {
+	font-size: 28rpx;
+	color: #ffffff;
+	font-weight: 700;
+}
+
+.header-info {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 18rpx;
+	margin-top: 20rpx;
+	padding-bottom: 30rpx;
+}
+
+.header-icon {
+	font-size: 44rpx;
+	margin-right: 10rpx;
+}
+
+.header-text {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	justify-content: flex-end;
 }
 
-.brand-title {
-	font-size: 52rpx;
+.page-title {
+	font-size: 36rpx;
 	font-weight: 800;
 	color: #ffffff;
-	text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-	letter-spacing: -1rpx;
-	margin-bottom: 8rpx;
-	line-height: 1.2;
+	text-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.12);
+	letter-spacing: -0.5rpx;
+	margin-bottom: 6rpx;
 }
 
-.brand-subtitle {
-	font-size: 26rpx;
-	color: rgba(255, 255, 255, 0.9);
+.page-subtitle {
+	font-size: 22rpx;
+	color: rgba(255, 255, 255, 0.95);
 	font-weight: 500;
-	letter-spacing: 1rpx;
+	letter-spacing: 0.3rpx;
 }
 
-/* ==================== 主内容区域 ==================== */
-.main-content {
-	padding: 10rpx 40rpx 40rpx;
+/* ==================== 内容区域 ==================== */
+.content-section {
+	padding: 40rpx 28rpx 60rpx;
 }
 
-.section-card {
+/* ==================== 卡片通用样式 ==================== */
+.info-card,
+.feature-card,
+.contact-card,
+.copyright-card {
 	position: relative;
 	background: #ffffff;
-	border-radius: 32rpx;
-	padding: 40rpx;
-	margin-bottom: 32rpx;
-	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-	border: 1rpx solid rgba(255, 255, 255, 0.8);
+	border-radius: 24rpx;
+	padding: 48rpx;
+	margin-bottom: 44rpx;
+	box-shadow: 0 8rpx 28rpx rgba(0, 0, 0, 0.06);
+	border: 1rpx solid rgba(255, 255, 255, 0.85);
 	overflow: hidden;
-	transition: all 0.3s ease;
-}
-
-.section-card:hover {
-	transform: translateY(-2rpx);
-	box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.12);
 }
 
 .card-bg-pattern {
 	position: absolute;
 	top: 0;
 	right: 0;
-	width: 200rpx;
-	height: 200rpx;
-	background: radial-gradient(circle, rgba(246, 213, 92, 0.1) 0%, transparent 70%);
+	width: 180rpx;
+	height: 180rpx;
+	background: radial-gradient(circle, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
 	border-radius: 50%;
-	transform: translate(50rpx, -50rpx);
+	transform: translate(40rpx, -40rpx);
+	opacity: 0.9;
 }
 
-.section-header {
+/* ==================== 应用信息 ==================== */
+.app-info {
+	display: flex;
+	align-items: center;
+	gap: 24rpx;
+	position: relative;
+	z-index: 2;
+}
+
+.app-icon {
+	width: 96rpx;
+	height: 96rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #ffffff;
+	border: 3rpx solid #667eea;
+	border-radius: 50%;
+	box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.3);
+	overflow: hidden;
+}
+
+.logo-image {
+	width: 80rpx;
+	height: 80rpx;
+}
+
+.app-details {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 8rpx;
+}
+
+.app-name {
+	font-size: 32rpx;
+	font-weight: 800;
+	color: #2d3748;
+	letter-spacing: -0.5rpx;
+}
+
+.app-version {
+	font-size: 24rpx;
+	color: #718096;
+	font-weight: 600;
+}
+
+.app-description {
+	font-size: 26rpx;
+	color: #4a5568;
+	line-height: 1.5;
+	margin-top: 8rpx;
+}
+
+/* ==================== 功能特色 ==================== */
+.feature-header {
 	display: flex;
 	align-items: center;
 	margin-bottom: 32rpx;
@@ -243,100 +355,121 @@ export default {
 	z-index: 2;
 }
 
-.section-icon {
-	font-size: 32rpx;
-	margin-right: 16rpx;
+.feature-icon {
+	font-size: 30rpx;
+	margin-right: 12rpx;
 }
 
-.section-title {
-	font-size: 32rpx;
+.feature-title {
+	font-size: 26rpx;
 	font-weight: 700;
 	color: #2d3748;
 }
 
-.section-content {
+.feature-list {
 	position: relative;
 	z-index: 2;
 }
 
-.description {
-	font-size: 28rpx;
-	color: #4a5568;
-	line-height: 1.6;
-}
-
-.statement-item {
+.feature-item {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	margin-bottom: 24rpx;
 }
 
-.statement-item:last-child {
+.feature-item:last-child {
 	margin-bottom: 0;
 }
 
-.bullet-container {
+.feature-dot {
+	font-size: 24rpx;
 	margin-right: 16rpx;
-	margin-top: 8rpx;
+	width: 32rpx;
+	text-align: center;
 }
 
-.bullet {
-	width: 8rpx;
-	height: 8rpx;
-	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-	border-radius: 50%;
-	box-shadow: 0 2rpx 8rpx rgba(66, 153, 225, 0.3);
-}
-
-.statement-text {
-	font-size: 28rpx;
+.feature-text {
+	font-size: 26rpx;
 	color: #4a5568;
-	line-height: 1.6;
-	flex: 1;
+	font-weight: 500;
 }
 
-/* ==================== 联系卡片 ==================== */
-.contact-card {
-	cursor: pointer;
+/* ==================== 联系我们 ==================== */
+.contact-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 32rpx;
+	position: relative;
+	z-index: 2;
 }
 
-.contact-card:active {
-	transform: translateY(1rpx);
-	box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.15);
+.contact-icon {
+	font-size: 30rpx;
+	margin-right: 12rpx;
 }
 
-.contact-content {
+.contact-title {
+	font-size: 26rpx;
+	font-weight: 700;
+	color: #2d3748;
+}
+
+.contact-list {
+	position: relative;
+	z-index: 2;
+}
+
+.contact-item {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	position: relative;
-	z-index: 2;
+	padding: 24rpx 0;
+	border-bottom: 1rpx solid #f7fafc;
+	transition: all 0.2s ease;
+}
+
+.contact-item:last-child {
+	border-bottom: none;
+}
+
+.contact-item:active {
+	background: #f7fafc;
+	border-radius: 12rpx;
+	margin: 0 -12rpx;
+	padding: 24rpx 12rpx;
 }
 
 .contact-left {
 	display: flex;
 	align-items: center;
+	gap: 16rpx;
 }
 
 .contact-icon {
-	font-size: 40rpx;
-	margin-right: 24rpx;
+	font-size: 28rpx;
+	width: 48rpx;
+	height: 48rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #f7fafc;
+	border-radius: 12rpx;
 }
 
 .contact-info {
 	display: flex;
 	flex-direction: column;
+	gap: 4rpx;
 }
 
 .contact-title {
-	font-size: 32rpx;
-	font-weight: 700;
+	font-size: 26rpx;
+	font-weight: 600;
 	color: #2d3748;
-	margin-bottom: 8rpx;
 }
 
 .contact-subtitle {
-	font-size: 24rpx;
+	font-size: 22rpx;
 	color: #718096;
 }
 
@@ -344,192 +477,47 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 40rpx;
-	height: 40rpx;
+	width: 32rpx;
+	height: 32rpx;
 }
 
 .arrow-icon {
-	width: 32rpx;
-	height: 32rpx;
+	font-size: 24rpx;
+	color: #a0aec0;
+	font-weight: 600;
+}
+
+.copy-icon {
+	font-size: 32rpx;
 	opacity: 0.8;
 }
 
-/* ==================== 功能特色 ==================== */
-.feature-grid {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 24rpx;
+/* ==================== 版权信息 ==================== */
+.copyright-card {
+	background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+	border: 1rpx solid #e2e8f0;
 }
 
-.feature-item {
+.copyright-content {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	text-align: center;
-	padding: 24rpx 16rpx;
-	background: rgba(246, 213, 92, 0.05);
-	border-radius: 20rpx;
-	border: 1rpx solid rgba(246, 213, 92, 0.1);
+	gap: 12rpx;
+	position: relative;
+	z-index: 2;
 }
 
-.feature-icon {
-	font-size: 32rpx;
-	margin-bottom: 12rpx;
-}
-
-.feature-title {
-	font-size: 26rpx;
-	font-weight: 600;
-	color: #2d3748;
-	margin-bottom: 8rpx;
-}
-
-.feature-desc {
-	font-size: 22rpx;
-	color: #718096;
-	line-height: 1.4;
-}
-
-/* ==================== 统计数据 ==================== */
-.stats-grid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 24rpx;
-}
-
-.stat-item {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	text-align: center;
-	padding: 32rpx 16rpx;
-	background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
-	border-radius: 20rpx;
-	border: 1rpx solid rgba(66, 153, 225, 0.1);
-}
-
-.stat-number {
-	font-size: 36rpx;
-	font-weight: 800;
-	color: #4299e1;
-	margin-bottom: 8rpx;
-	text-shadow: 0 2rpx 8rpx rgba(66, 153, 225, 0.2);
-}
-
-.stat-label {
-	font-size: 24rpx;
-	color: #718096;
-	font-weight: 500;
-}
-
-/* ==================== 更新日志 ==================== */
-.changelog-list {
-	display: flex;
-	flex-direction: column;
-	gap: 24rpx;
-}
-
-.changelog-item {
-	padding: 24rpx;
-	background: rgba(237, 137, 54, 0.05);
-	border-radius: 16rpx;
-	border-left: 4rpx solid #ed8936;
-}
-
-.changelog-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 16rpx;
-}
-
-.changelog-version {
-	font-size: 26rpx;
-	font-weight: 700;
-	color: #ed8936;
-}
-
-.changelog-date {
-	font-size: 22rpx;
-	color: #718096;
-}
-
-.changelog-content {
-	display: flex;
-	flex-direction: column;
-	gap: 8rpx;
-}
-
-.changelog-item-text {
+.copyright-text {
 	font-size: 24rpx;
 	color: #4a5568;
+	font-weight: 600;
+}
+
+.copyright-desc {
+	font-size: 22rpx;
+	color: #718096;
+	text-align: center;
 	line-height: 1.5;
-}
-
-/* ==================== 开发团队 ==================== */
-.team-info {
-	display: flex;
-	flex-direction: column;
-	gap: 24rpx;
-}
-
-.team-desc {
-	font-size: 28rpx;
-	color: #4a5568;
-	line-height: 1.6;
-	text-align: center;
-	padding: 0 16rpx;
-}
-
-.team-values {
-	display: flex;
-	flex-direction: column;
-	gap: 16rpx;
-}
-
-.value-item {
-	display: flex;
-	align-items: center;
-	padding: 16rpx 20rpx;
-	background: rgba(72, 187, 120, 0.05);
-	border-radius: 16rpx;
-	border: 1rpx solid rgba(72, 187, 120, 0.1);
-}
-
-.value-title {
-	font-size: 26rpx;
-	font-weight: 600;
-	color: #2d3748;
-	margin-right: 16rpx;
-	min-width: 80rpx;
-}
-
-.value-desc {
-	font-size: 24rpx;
-	color: #718096;
-	flex: 1;
-}
-
-/* ==================== 底部区域 ==================== */
-.footer {
-	display: flex;
-	justify-content: center;
-	padding: 40rpx;
-}
-
-.version-container {
-	background: rgba(255, 255, 255, 0.8);
-	backdrop-filter: blur(20rpx);
-	border: 1rpx solid rgba(255, 255, 255, 0.3);
-	border-radius: 20rpx;
-	padding: 16rpx 32rpx;
-	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
-}
-
-.version {
-	font-size: 24rpx;
-	color: #718096;
-	font-weight: 500;
 }
 
 /* ==================== 底部渐变 ==================== */
