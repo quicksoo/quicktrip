@@ -215,8 +215,7 @@ export default {
 				if (this.searchKeyword.trim()) {
 					query = query.where({
 						name: db.RegExp({
-							regexp: this.searchKeyword.trim(),
-							options: 'i'
+							regexp: this.searchKeyword.trim()
 						})
 					})
 				} else {
