@@ -26,7 +26,7 @@
 						<input 
 							class="search-input" 
 							type="text" 
-							placeholder="搜索景点名称..." 
+							placeholder="全国景点搜索..." 
 							v-model="searchKeyword"
 							@input="onSearchInput"
 							confirm-type="search"
