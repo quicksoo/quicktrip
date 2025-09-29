@@ -21,6 +21,7 @@
 				<view class="spot-info">
 					<text class="spot-name">{{item.name}}</text>
 					<view class="price-city">
+						<text class="sort">{{item.sort}}</text>
 						<text class="city">{{getCityName(item.city)}}</text>
 						<text class="price">{{ item.price > 0 ? `¥${item.price}` : '免费' }}</text>
 					</view>
@@ -63,7 +64,7 @@
 						
 						<view class="field">
 							<text class="label">预约时间</text>
-							<input v-model="formData.reservationTime" placeholder="如：提前7天预约" class="input" />
+							<textarea v-model="formData.reservationTime" placeholder="如：提前7天预约" class="textarea" ></textarea>
 						</view>
 						
 						<view class="field">
@@ -528,6 +529,15 @@ export default {
 	border-radius: 5rpx;
 	font-size: 24rpx;
 	color: #cc0000;
+}
+
+.sort {
+	background: #ffaaff;
+	padding: 5rpx 10rpx;
+	border-radius: 5rpx;
+	font-size: 24rpx;
+	color: #2f2f2f;
+	margin-right: 10rpx;
 }
 
 .description {
