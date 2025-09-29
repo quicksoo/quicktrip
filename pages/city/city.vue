@@ -547,23 +547,18 @@ export default {
 
 		// 添加城市到历史队列
 		addToHistoryQueue(city) {
-			console.log('添加城市到历史队列:', city.name)
-			
 			// 检查是否已存在，如果存在则移除旧的
 			const existingIndex = this.historyQueue.findIndex(item => item.code === city.code)
 			if (existingIndex !== -1) {
-				console.log('城市已存在，移除旧记录:', existingIndex)
 				this.historyQueue.splice(existingIndex, 1)
 			}
 
 			// 添加到队列头部
 			this.historyQueue.unshift(city)
-			console.log('当前历史队列长度:', this.historyQueue.length)
 
 			// 如果超过最大数量，移除队列尾部元素
 			if (this.historyQueue.length > this.maxHistorySize) {
 				const removed = this.historyQueue.pop()
-				console.log('队列已满，移除:', removed.name)
 			}
 
 			// 保存到本地存储

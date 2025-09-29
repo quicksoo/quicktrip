@@ -129,12 +129,10 @@ export default {
 	onLoad() {
 		// 确保弹窗初始状态为关闭
 		this.showFeedbackList = false
-		console.log('页面加载，弹窗状态:', this.showFeedbackList)
 	},
 	onShow() {
 		// 每次显示页面时重置弹窗状态
 		this.showFeedbackList = false
-		console.log('页面显示，弹窗状态:', this.showFeedbackList)
 	},
 	methods: {
 		goBack() {
@@ -197,7 +195,6 @@ export default {
 		// 标题点击事件 - 连续点击10次查看用户意见
 		onTitleClick() {
 			this.clickCount++
-			console.log('点击次数:', this.clickCount)
 			
 			// 清除之前的定时器
 			if (this.clickTimer) {
@@ -207,12 +204,10 @@ export default {
 			// 设置3秒后重置点击计数
 			this.clickTimer = setTimeout(() => {
 				this.clickCount = 0
-				console.log('点击计数已重置')
 			}, 3000)
 			
 			// 连续点击10次触发查看功能
 			if (this.clickCount >= 10) {
-				console.log('触发查看反馈功能')
 				this.clickCount = 0
 				this.viewUserFeedbacks()
 			}
@@ -220,7 +215,6 @@ export default {
 
 		// 查看用户意见
 		async viewUserFeedbacks() {
-			console.log('开始查看用户反馈')
 			
 			uni.showLoading({
 				title: '加载中...'

@@ -17,6 +17,26 @@
 					<text class="brand-subtitle">一站式约景小助手</text>
 				</view>
 			</view>
+			
+			<!-- 搜索框 - 放在头部区域内 -->
+			<view class="search-section">
+				<view class="search-container">
+					<view class="search-input-wrapper">
+						<view class="search-icon">🔍</view>
+						<input 
+							class="search-input" 
+							type="text" 
+							placeholder="搜索景点名称..." 
+							v-model="searchKeyword"
+							@input="onSearchInput"
+							confirm-type="search"
+						/>
+						<view class="clear-btn" v-if="searchKeyword" @tap="clearSearch">
+							<text class="clear-icon">✕</text>
+						</view>
+					</view>
+				</view>
+			</view>
 		</view>
 
 		<!-- 主内容区域 -->
@@ -55,14 +75,28 @@
 				</view>
 			</view>
 
+			<!-- 搜索状态提示 -->
+			<view class="search-status" v-if="searchKeyword.trim()">
+				<text class="search-tip">🔍 全局搜索 "{{searchKeyword}}"</text>
+			</view>
+
 			<!-- 空状态 -->
-			<view class="empty-container" v-if="filteredScenicSpots.length === 0">
+			<view class="empty-container" v-if="filteredScenicSpots.length === 0 && !loading">
 				<view class="empty-illustration">
-					<text class="empty-icon">🗺️</text>
+					<text class="empty-icon" v-if="!searchKeyword.trim()">🗺️</text>
+					<text class="empty-icon" v-else>🔍</text>
 					<view class="empty-glow"></view>
 				</view>
-				<text class="empty-title">暂无景点信息</text>
-				<text class="empty-subtitle">换个城市试试看吧</text>
+				<text class="empty-title" v-if="!searchKeyword.trim()">暂无景点信息</text>
+				<text class="empty-title" v-else>未找到相关景点</text>
+				<text class="empty-subtitle" v-if="!searchKeyword.trim()">换个城市试试看吧</text>
+				<text class="empty-subtitle" v-else>试试其他关键词吧</text>
+			</view>
+
+			<!-- 加载状态 -->
+			<view class="loading-container" v-if="loading">
+				<view class="loading-spinner"></view>
+				<text class="loading-text">搜索中...</text>
 			</view>
 		</view>
 
@@ -137,6 +171,7 @@ export default {
 	data() {
 		return {
 			searchKeyword: '',
+			searchTimer: null,    // 搜索防抖定时器
 			currentSelectedCity: { name: '北京', code: 'beijing' }, // 当前选中的城市
 			scenicSpots: [],
 			loading: false,
@@ -150,15 +185,7 @@ export default {
 			return this.currentSelectedCity
 		},
 		filteredScenicSpots() {
-			const dataSource = this.scenicSpots.length > 0 ? this.scenicSpots : []
-			
-			if (this.searchKeyword.trim()) {
-				return dataSource.filter(spot =>
-					spot.name.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
-					(spot.address && spot.address.toLowerCase().includes(this.searchKeyword.toLowerCase()))
-				)
-			}
-			return dataSource
+			return this.scenicSpots
 		}
 	},
 	onLoad() {
@@ -182,12 +209,24 @@ export default {
 			this.loading = true
 			try {
 				const db = wx.cloud.database()
-				const res = await db.collection('scenic_spots')
-					.where({
+				let query = db.collection('scenic_spots')
+				
+				// 如果有搜索关键词，进行全局搜索
+				if (this.searchKeyword.trim()) {
+					query = query.where({
+						name: db.RegExp({
+							regexp: this.searchKeyword.trim(),
+							options: 'i'
+						})
+					})
+				} else {
+					// 没有搜索关键词时，按城市筛选
+					query = query.where({
 						city: this.currentCity.code
 					})
-					.orderBy('sort', 'asc')
-					.get()
+				}
+				
+				const res = await query.orderBy('sort', 'asc').get()
 				this.scenicSpots = res.data || []
 			} catch (error) {
 				console.error('加载云数据库失败:', error)
@@ -253,6 +292,23 @@ export default {
 		closeQrCode() {
 			this.showQrModal = false
 			this.currentScenic = null
+		},
+
+		// 搜索输入处理
+		onSearchInput(e) {
+			this.searchKeyword = e.detail.value
+			// 防抖搜索
+			clearTimeout(this.searchTimer)
+			this.searchTimer = setTimeout(() => {
+				this.loadScenicSpots()
+			}, 500)
+		},
+
+		// 清除搜索
+		clearSearch() {
+			this.searchKeyword = ''
+			clearTimeout(this.searchTimer)
+			this.loadScenicSpots()
 		},
 
 		// 复制链接到剪贴板
@@ -586,7 +642,7 @@ export default {
 	/* ==================== 头部区域 ==================== */
 	.header-section {
 		position: relative;
-		padding-bottom: 40rpx;
+		padding-bottom: 48rpx;
 	}
 
 	.header-bg {
@@ -671,7 +727,131 @@ export default {
 
 	/* ==================== 主内容区域 ==================== */
 	.main-content {
-		padding: 10rpx 40rpx 40rpx;
+		padding: 88rpx 40rpx 40rpx;
+		position: relative;
+		z-index: 3;
+	}
+
+	/* ==================== 搜索框样式 ==================== */
+	.search-section {
+		position: absolute;
+		bottom: -48rpx;
+		left: 40rpx;
+		right: 40rpx;
+		z-index: 5;
+	}
+
+	.search-container {
+		position: relative;
+	}
+
+	.search-input-wrapper {
+		position: relative;
+		display: flex;
+		align-items: center;
+		background: #ffffff;
+		border-radius: 50rpx;
+		padding: 0 24rpx;
+		box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+		border: 2rpx solid rgba(255, 255, 255, 0.8);
+		backdrop-filter: blur(10rpx);
+		transition: all 0.3s ease;
+	}
+
+	.search-input-wrapper:focus-within {
+		border-color: rgba(246, 213, 92, 0.8);
+		box-shadow: 0 12rpx 40rpx rgba(246, 213, 92, 0.25);
+		transform: translateY(-4rpx);
+	}
+
+	.search-icon {
+		font-size: 32rpx;
+		color: #f6d55c;
+		margin-right: 16rpx;
+		flex-shrink: 0;
+	}
+
+	.search-input {
+		flex: 1;
+		height: 96rpx;
+		font-size: 28rpx;
+		color: #333;
+		background: transparent;
+		border: none;
+		outline: none;
+	}
+
+	.search-input::placeholder {
+		color: #999;
+		font-size: 28rpx;
+	}
+
+	.clear-btn {
+		width: 44rpx;
+		height: 44rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(246, 213, 92, 0.15);
+		border-radius: 50%;
+		margin-left: 16rpx;
+		flex-shrink: 0;
+		transition: all 0.2s ease;
+	}
+
+	.clear-btn:active {
+		background: rgba(246, 213, 92, 0.3);
+		transform: scale(0.9);
+	}
+
+	.clear-icon {
+		font-size: 24rpx;
+		color: #f6d55c;
+		font-weight: bold;
+		line-height: 1;
+	}
+
+	/* ==================== 搜索状态提示 ==================== */
+	.search-status {
+		margin-bottom: 24rpx;
+		text-align: center;
+	}
+
+	.search-tip {
+		font-size: 24rpx;
+		color: #f6d55c;
+		background: rgba(246, 213, 92, 0.1);
+		padding: 12rpx 24rpx;
+		border-radius: 20rpx;
+		border: 1rpx solid rgba(246, 213, 92, 0.3);
+	}
+
+	/* ==================== 加载状态 ==================== */
+	.loading-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 80rpx 40rpx;
+	}
+
+	.loading-spinner {
+		width: 60rpx;
+		height: 60rpx;
+		border: 4rpx solid rgba(246, 213, 92, 0.2);
+		border-top: 4rpx solid #f6d55c;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 24rpx;
+	}
+
+	.loading-text {
+		font-size: 28rpx;
+		color: #999;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
 	}
 
 

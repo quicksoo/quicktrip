@@ -124,8 +124,6 @@ data() {
 			// 标题点击事件 - 连续点击10次查看用户意见
 		onTitleClick() {
 			this.clickCount++
-			console.log('点击次数:', this.clickCount)
-			
 			// 清除之前的定时器
 			if (this.clickTimer) {
 				clearTimeout(this.clickTimer)
@@ -134,7 +132,6 @@ data() {
 			// 设置3秒后重置点击计数
 			this.clickTimer = setTimeout(() => {
 				this.clickCount = 0
-				console.log('点击计数已重置')
 			}, 3000)
 			
 			// 连续点击10次触发查看功能
